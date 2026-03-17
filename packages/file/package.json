@@ -3,6 +3,9 @@
     "version": "0.1.0",
     "description": "File validation plugin for Kanun.",
     "type": "module",
+    "publishConfig": {
+        "access": "public"
+    },
     "files": [
         "dist"
     ],
