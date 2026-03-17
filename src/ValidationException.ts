@@ -6,6 +6,7 @@ export class ValidationException extends Error {
     public validator: Validator<any, any>
     public response?: any
     public status: number = 422
+    public statusCode: number = 422
     public errorBag: string = 'default'
     public redirectTo?: string
     public name: string = 'ValidationException'
