@@ -1,8 +1,8 @@
 import type { CustomAttributes, CustomMessages, InitialRule, InitialRules } from './Contracts/BaseContract'
+import { getValidatorContext, runWithValidatorContext, useValidatorContext } from './Context'
 
 import BaseValidator from './BaseValidator'
 import ErrorBag from './validators/errorBag'
-import { getValidatorContext, runWithValidatorContext, useValidatorContext } from './Context'
 import { GenericObject } from 'src/Contracts/IGeneric'
 import { default as PasswordRule } from './Rules/password'
 import { usePlugin } from './Plugin'

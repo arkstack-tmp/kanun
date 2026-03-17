@@ -1,10 +1,11 @@
 'use strict'
 
 import { compare, convertValuesToBoolean, convertValuesToNull, convertValuesToNumber, getNumericRules, getSize, isInteger, sameType } from '../utilities/general'
-import { deepEqual, deepFind, isObject } from '../utilities/object'
+import { deepEqual, deepFind } from '../utilities/object'
 
 import { GenericObject } from 'src/Contracts/IGeneric'
 import { Rules } from '../Contracts/BaseContract'
+import { isObject } from 'src/utilities/helpers'
 import { toDate } from '../utilities/date'
 import validationRuleParser from './validationRuleParser'
 

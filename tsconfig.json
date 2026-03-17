@@ -16,8 +16,7 @@
     "types": ["node", "vitest"],
     "baseUrl": ".",
     "paths": {
-      "kanun": ["src/index.ts"],
-      "karun": ["src/index.ts"]
+      "kanun": ["src/index.ts"]
     }
   },
   "exclude": [

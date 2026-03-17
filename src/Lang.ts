@@ -2,7 +2,7 @@
 
 import { GenericObject } from './Contracts/IGeneric'
 import locales from './locales/index'
-import { mergeDeep } from './utilities/object'
+import { mergeDeep } from './utilities/helpers'
 
 export class Lang {
 

@@ -32,27 +32,29 @@ yarn add kanun kanun-plugin-file
 Register the plugin once during application startup.
 
 ```ts
-import { Validator } from 'kanun'
-import { fileValidatorPlugin } from 'kanun-plugin-file'
+import { Validator } from 'kanun';
+import { fileValidatorPlugin } from 'kanun-plugin-file';
 
-Validator.use(fileValidatorPlugin)
+Validator.use(fileValidatorPlugin);
 ```
 
 If you need custom file lookup behavior, register your own instance instead:
 
 ```ts
-import { Validator } from 'kanun'
-import { createFileValidatorPlugin } from 'kanun-plugin-file'
+import { Validator } from 'kanun';
+import { createFileValidatorPlugin } from 'kanun-plugin-file';
 
-Validator.use(createFileValidatorPlugin({
-  resolveFiles: ({ attribute, context, value }) => {
-    if (typeof value !== 'undefined') {
-      return value
-    }
+Validator.use(
+  createFileValidatorPlugin({
+    resolveFiles: ({ attribute, context, value }) => {
+      if (typeof value !== 'undefined') {
+        return value;
+      }
 
-    return context.requestFiles?.[attribute]
-  },
-}))
+      return context.requestFiles?.[attribute];
+    },
+  }),
+);
 ```
 
 ## Supported File Shapes
@@ -86,14 +88,14 @@ const avatar = {
   mimetype: 'image/png',
   originalname: 'avatar.png',
   size: 2048,
-}
+};
 
 const validator = Validator.make(
   { avatar },
   { avatar: 'file|image|extensions:png|max:4' },
-)
+);
 
-const passes = await validator.passes()
+const passes = await validator.passes();
 ```
 
 ## Rule Reference
@@ -103,10 +105,7 @@ const passes = await validator.passes()
 Validates that the value resolves to exactly one file.
 
 ```ts
-const validator = Validator.make(
-  { avatar },
-  { avatar: 'file' },
-)
+const validator = Validator.make({ avatar }, { avatar: 'file' });
 ```
 
 ### `files`
@@ -114,10 +113,7 @@ const validator = Validator.make(
 Validates that the value resolves to an array of files.
 
 ```ts
-const validator = Validator.make(
-  { attachments },
-  { attachments: 'files' },
-)
+const validator = Validator.make({ attachments }, { attachments: 'files' });
 ```
 
 ### `image`
@@ -130,10 +126,7 @@ Image detection succeeds when either of these is true:
 - the file extension is a known image extension such as `png`, `jpg`, `gif`, `webp`, or `svg`
 
 ```ts
-const validator = Validator.make(
-  { avatar },
-  { avatar: 'file|image' },
-)
+const validator = Validator.make({ avatar }, { avatar: 'file|image' });
 ```
 
 ### `extensions:...`
@@ -144,7 +137,7 @@ Validates the filename or path suffix.
 const validator = Validator.make(
   { avatar },
   { avatar: 'file|extensions:png,jpg,jpeg' },
-)
+);
 ```
 
 Use this when your rule should match the actual extension directly.
@@ -154,10 +147,7 @@ Use this when your rule should match the actual extension directly.
 Validates by resolved extension using the familiar Laravel-style rule syntax.
 
 ```ts
-const validator = Validator.make(
-  { avatar },
-  { avatar: 'file|mimes:png,jpg' },
-)
+const validator = Validator.make({ avatar }, { avatar: 'file|mimes:png,jpg' });
 ```
 
 Use this when you want extension-like validation but prefer the conventional `mimes` rule name.
@@ -170,7 +160,7 @@ Validates the file MIME type.
 const validator = Validator.make(
   { avatar },
   { avatar: 'file|mimetypes:image/png,image/jpeg' },
-)
+);
 ```
 
 ### `dimensions:...`
@@ -192,7 +182,7 @@ const validator = Validator.make(
     avatar:
       'file|image|dimensions:min_width=256,min_height=256,max_width=2048,max_height=2048,ratio=1',
   },
-)
+);
 ```
 
 ```ts
@@ -201,7 +191,7 @@ const validator = Validator.make(
   {
     banner: 'file|image|dimensions:min_width=1200,ratio=3/1',
   },
-)
+);
 ```
 
 Dimension lookup works in this order:
@@ -217,17 +207,11 @@ The plugin extends Kanun's built-in `min`, `max`, and `size` rules for file valu
 All file sizes are interpreted in kilobytes.
 
 ```ts
-const validator = Validator.make(
-  { avatar },
-  { avatar: 'file|min:1|max:2048' },
-)
+const validator = Validator.make({ avatar }, { avatar: 'file|min:1|max:2048' });
 ```
 
 ```ts
-const validator = Validator.make(
-  { avatar },
-  { avatar: 'file|size:512' },
-)
+const validator = Validator.make({ avatar }, { avatar: 'file|size:512' });
 ```
 
 ## Validating Files Passed Directly In Data
@@ -247,9 +231,9 @@ const validator = Validator.make(
   {
     avatar: 'file|image|extensions:png|mimetypes:image/png|max:4',
   },
-)
+);
 
-await validator.validate()
+await validator.validate();
 ```
 
 ## Validating Request-Scoped Uploads With `.withContext()`
@@ -264,9 +248,9 @@ const validator = Validator.make(
   requestFiles: {
     avatar,
   },
-})
+});
 
-const validated = await validator.validate()
+const validated = await validator.validate();
 ```
 
 `validated` will include the file:
@@ -282,16 +266,16 @@ const validated = await validator.validate()
 If you register request-scoped data in middleware and create validators later in the same request lifecycle, use the static API.
 
 ```ts
-import { Validator } from 'kanun'
+import { Validator } from 'kanun';
 
 Validator.useContext({
   requestFiles: {
     avatar,
   },
-})
+});
 
-const validator = Validator.make({}, { avatar: 'file|image|mimes:png' })
-const validated = await validator.validate()
+const validator = Validator.make({}, { avatar: 'file|image|mimes:png' });
+const validated = await validator.validate();
 ```
 
 ## Returning Validated Files From `validate()`
@@ -314,11 +298,11 @@ const validator = Validator.make(
   requestFiles: {
     avatar,
   },
-})
+});
 
-const validated = await validator.validate()
+const validated = await validator.validate();
 
-validated.avatar
+validated.avatar;
 ```
 
 ## Express
@@ -328,26 +312,32 @@ validated.avatar
 Use `useExpressUploadContext()` after middleware such as Multer has populated `req.file` or `req.files`.
 
 ```ts
-import express from 'express'
-import multer from 'multer'
-import { Validator } from 'kanun'
-import { fileValidatorPlugin, useExpressUploadContext } from 'kanun-plugin-file'
+import express from 'express';
+import multer from 'multer';
+import { Validator } from 'kanun';
+import {
+  fileValidatorPlugin,
+  useExpressUploadContext,
+} from 'kanun-plugin-file';
 
-Validator.use(fileValidatorPlugin)
+Validator.use(fileValidatorPlugin);
 
-const app = express()
-const upload = multer({ storage: multer.memoryStorage() })
+const app = express();
+const upload = multer({ storage: multer.memoryStorage() });
 
 app.post('/profile', upload.single('avatar'), async (req, res) => {
-  useExpressUploadContext(req)
+  useExpressUploadContext(req);
 
-  const validator = Validator.make({}, {
-    avatar: 'file|image|mimes:png,jpg|max:2048',
-  })
+  const validator = Validator.make(
+    {},
+    {
+      avatar: 'file|image|mimes:png,jpg|max:2048',
+    },
+  );
 
-  const validated = await validator.validate()
-  res.json(validated)
-})
+  const validated = await validator.validate();
+  res.json(validated);
+});
 ```
 
 ### Single validator instance usage
@@ -355,14 +345,14 @@ app.post('/profile', upload.single('avatar'), async (req, res) => {
 Use `withExpressUploadContext()` when you only want to enrich one validator instance.
 
 ```ts
-import { withExpressUploadContext } from 'kanun-plugin-file'
+import { withExpressUploadContext } from 'kanun-plugin-file';
 
 const validator = withExpressUploadContext(
   Validator.make({}, { avatar: 'file|image|mimes:png' }),
   req,
-)
+);
 
-await validator.validate()
+await validator.validate();
 ```
 
 ## Fastify
@@ -372,27 +362,33 @@ await validator.validate()
 Use `useFastifyUploadContext()` with `@fastify/multipart`.
 
 ```ts
-import Fastify from 'fastify'
-import multipart from '@fastify/multipart'
-import { Validator } from 'kanun'
-import { fileValidatorPlugin, useFastifyUploadContext } from 'kanun-plugin-file'
+import Fastify from 'fastify';
+import multipart from '@fastify/multipart';
+import { Validator } from 'kanun';
+import {
+  fileValidatorPlugin,
+  useFastifyUploadContext,
+} from 'kanun-plugin-file';
 
-Validator.use(fileValidatorPlugin)
+Validator.use(fileValidatorPlugin);
 
-const app = Fastify()
-await app.register(multipart)
+const app = Fastify();
+await app.register(multipart);
 
 app.addHook('preHandler', async (request) => {
-  await useFastifyUploadContext(request)
-})
+  await useFastifyUploadContext(request);
+});
 
 app.post('/attachments', async () => {
-  const validator = Validator.make({}, {
-    attachments: 'files|mimes:png,jpg,pdf',
-  })
+  const validator = Validator.make(
+    {},
+    {
+      attachments: 'files|mimes:png,jpg,pdf',
+    },
+  );
 
-  return await validator.validate()
-})
+  return await validator.validate();
+});
 ```
 
 `useFastifyUploadContext()` can normalize uploads from:
@@ -406,14 +402,14 @@ app.post('/attachments', async () => {
 ### Single validator instance usage
 
 ```ts
-import { withFastifyUploadContext } from 'kanun-plugin-file'
+import { withFastifyUploadContext } from 'kanun-plugin-file';
 
 const validator = await withFastifyUploadContext(
   Validator.make({}, { attachments: 'files|mimes:png,jpg' }),
   request,
-)
+);
 
-await validator.validate()
+await validator.validate();
 ```
 
 ## Hono
@@ -423,39 +419,42 @@ await validator.validate()
 Use `useHonoUploadContext()` to read files from `c.req.parseBody({ all: true })`.
 
 ```ts
-import { Hono } from 'hono'
-import { Validator } from 'kanun'
-import { fileValidatorPlugin, useHonoUploadContext } from 'kanun-plugin-file'
+import { Hono } from 'hono';
+import { Validator } from 'kanun';
+import { fileValidatorPlugin, useHonoUploadContext } from 'kanun-plugin-file';
 
-Validator.use(fileValidatorPlugin)
+Validator.use(fileValidatorPlugin);
 
-const app = new Hono()
+const app = new Hono();
 
 app.use('/profile', async (c, next) => {
-  await useHonoUploadContext(c)
-  await next()
-})
+  await useHonoUploadContext(c);
+  await next();
+});
 
 app.post('/profile', async (c) => {
-  const validator = Validator.make({}, {
-    avatar: 'file|image|mimetypes:image/png',
-  })
+  const validator = Validator.make(
+    {},
+    {
+      avatar: 'file|image|mimetypes:image/png',
+    },
+  );
 
-  return c.json(await validator.validate())
-})
+  return c.json(await validator.validate());
+});
 ```
 
 ### Single validator instance usage
 
 ```ts
-import { withHonoUploadContext } from 'kanun-plugin-file'
+import { withHonoUploadContext } from 'kanun-plugin-file';
 
 const validator = await withHonoUploadContext(
   Validator.make({}, { avatar: 'file|image|mimetypes:image/png' }),
   c,
-)
+);
 
-await validator.validate()
+await validator.validate();
 ```
 
 ## h3
@@ -465,26 +464,29 @@ await validator.validate()
 Use `useH3UploadContext()` inside middleware or handlers.
 
 ```ts
-import { H3 } from 'h3'
-import { Validator } from 'kanun'
-import { fileValidatorPlugin, useH3UploadContext } from 'kanun-plugin-file'
+import { H3 } from 'h3';
+import { Validator } from 'kanun';
+import { fileValidatorPlugin, useH3UploadContext } from 'kanun-plugin-file';
 
-Validator.use(fileValidatorPlugin)
+Validator.use(fileValidatorPlugin);
 
-const app = new H3()
+const app = new H3();
 
 app.use('/profile', async (event, next) => {
-  await useH3UploadContext(event)
-  return next()
-})
+  await useH3UploadContext(event);
+  return next();
+});
 
 app.post('/profile', async () => {
-  const validator = Validator.make({}, {
-    avatar: 'file|image|mimetypes:image/png',
-  })
+  const validator = Validator.make(
+    {},
+    {
+      avatar: 'file|image|mimetypes:image/png',
+    },
+  );
 
-  return await validator.validate()
-})
+  return await validator.validate();
+});
 ```
 
 `useH3UploadContext()` can resolve files from:
@@ -497,14 +499,14 @@ app.post('/profile', async () => {
 ### Single validator instance usage
 
 ```ts
-import { withH3UploadContext } from 'kanun-plugin-file'
+import { withH3UploadContext } from 'kanun-plugin-file';
 
 const validator = await withH3UploadContext(
   Validator.make({}, { avatar: 'file|image|mimetypes:image/png' }),
   event,
-)
+);
 
-await validator.validate()
+await validator.validate();
 ```
 
 ## Wildcard Multi-file Validation
@@ -512,12 +514,12 @@ await validator.validate()
 Use `createWildcardFileRules()` when you want both collection-level and item-level rules.
 
 ```ts
-import { createWildcardFileRules } from 'kanun-plugin-file'
+import { createWildcardFileRules } from 'kanun-plugin-file';
 
 const rules = createWildcardFileRules(
   'attachments',
   'file|image|extensions:png,jpg',
-)
+);
 ```
 
 This produces rules equivalent to:
@@ -536,9 +538,9 @@ import {
   createWildcardFileRules,
   syncRequestFilesToData,
   useExpressUploadContext,
-} from 'kanun-plugin-file'
+} from 'kanun-plugin-file';
 
-useExpressUploadContext(req)
+useExpressUploadContext(req);
 
 const validator = syncRequestFilesToData(
   Validator.make(
@@ -550,9 +552,9 @@ const validator = syncRequestFilesToData(
     ),
   ),
   ['attachments'],
-)
+);
 
-const validated = await validator.validate()
+const validated = await validator.validate();
 ```
 
 `validated.attachments` will contain the uploaded files.
@@ -562,22 +564,24 @@ const validated = await validator.validate()
 If your framework or upload pipeline stores files somewhere other than `context.requestFiles`, provide a custom resolver.
 
 ```ts
-import { Validator } from 'kanun'
-import { createFileValidatorPlugin } from 'kanun-plugin-file'
+import { Validator } from 'kanun';
+import { createFileValidatorPlugin } from 'kanun-plugin-file';
 
-Validator.use(createFileValidatorPlugin({
-  resolveFiles: ({ attribute, context, data, value }) => {
-    if (typeof value !== 'undefined') {
-      return value
-    }
+Validator.use(
+  createFileValidatorPlugin({
+    resolveFiles: ({ attribute, context, data, value }) => {
+      if (typeof value !== 'undefined') {
+        return value;
+      }
 
-    if (context.uploads?.[attribute]) {
-      return context.uploads[attribute]
-    }
+      if (context.uploads?.[attribute]) {
+        return context.uploads[attribute];
+      }
 
-    return data[`__files.${attribute}`]
-  },
-}))
+      return data[`__files.${attribute}`];
+    },
+  }),
+);
 ```
 
 Resolver arguments:
@@ -592,48 +596,62 @@ Resolver arguments:
 ### Validate one avatar upload
 
 ```ts
-const validator = Validator.make({}, {
-  avatar: 'file|image|extensions:png,jpg|max:2048',
-}).withContext({
+const validator = Validator.make(
+  {},
+  {
+    avatar: 'file|image|extensions:png,jpg|max:2048',
+  },
+).withContext({
   requestFiles: { avatar },
-})
+});
 
-await validator.validate()
+await validator.validate();
 ```
 
 ### Validate many attachments
 
 ```ts
-const validator = Validator.make({ attachments }, {
-  attachments: 'files|mimes:png,jpg,pdf',
-})
+const validator = Validator.make(
+  { attachments },
+  {
+    attachments: 'files|mimes:png,jpg,pdf',
+  },
+);
 
-await validator.validate()
+await validator.validate();
 ```
 
 ### Validate an image banner with dimensions
 
 ```ts
-const validator = Validator.make({}, {
-  banner:
-    'file|image|mimetypes:image/png|dimensions:min_width=1200,max_width=2400,ratio=3/1',
-}).withContext({
+const validator = Validator.make(
+  {},
+  {
+    banner:
+      'file|image|mimetypes:image/png|dimensions:min_width=1200,max_width=2400,ratio=3/1',
+  },
+).withContext({
   requestFiles: { banner },
-})
+});
 
-await validator.validate()
+await validator.validate();
 ```
 
 ### Validate request uploads and return them
 
 ```ts
-const validated = await Validator.make({}, {
-  avatar: 'file|image|extensions:png',
-}).withContext({
-  requestFiles: { avatar },
-}).validate()
+const validated = await Validator.make(
+  {},
+  {
+    avatar: 'file|image|extensions:png',
+  },
+)
+  .withContext({
+    requestFiles: { avatar },
+  })
+  .validate();
 
-validated.avatar
+validated.avatar;
 ```
 
 ## Notes

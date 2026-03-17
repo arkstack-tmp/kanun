@@ -1,8 +1,8 @@
 'use strict'
 
-import { GenericObject } from 'src/Contracts/IGeneric'
+import { GenericObject } from '../Contracts/IGeneric'
 import { Lang } from '../Lang'
-import { deepFind } from '../utilities/object'
+import { deepFindMessage } from 'src/utilities/helpers'
 
 export default abstract class IRuleContract {
     /**
@@ -56,7 +56,7 @@ export default abstract class IRuleContract {
     trans (path: string, params: GenericObject = {}): string {
 
         const validatonMessages = Lang.get(this.lang)
-        let message: string = deepFind(validatonMessages, path) || ''
+        let message: string = deepFindMessage(validatonMessages, path) || ''
 
         if (!message) {
             return message

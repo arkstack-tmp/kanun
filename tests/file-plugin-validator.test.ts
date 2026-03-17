@@ -1,4 +1,4 @@
-import { assert, describe, it } from 'vitest'
+import { assert, describe, expectTypeOf, it } from 'vitest'
 import {
     createFileValidatorPlugin,
     createWildcardFileRules,
@@ -159,6 +159,64 @@ describe('File validator plugin', function () {
         assert.equal(await validator.passes(), true)
     })
 
+    it('supports array-style rule definitions for file validation', async function () {
+        const avatar = {
+            buffer: png1x1,
+            mimetype: 'image/png',
+            originalname: 'avatar.png',
+            size: 2048,
+        }
+
+        const validator = Validator.make(
+            { avatar },
+            {
+                avatar: ['file', 'image', 'extensions:png', 'mimetypes:image/png', 'max:4'],
+            },
+        )
+
+        assert.equal(await validator.passes(), true)
+        assert.deepEqual(await validator.validate(), { avatar })
+    })
+
+    it('keeps array-style file rules type-safe in TypeScript', async function () {
+        const avatar = {
+            buffer: png1x1,
+            mimetype: 'image/png',
+            originalname: 'avatar.png',
+            size: 2048,
+        }
+
+        const attachments = [
+            {
+                buffer: png1x1,
+                mimetype: 'image/png',
+                originalname: 'first.png',
+                size: 1024,
+            },
+            {
+                buffer: png1x1,
+                mimetype: 'image/jpeg',
+                originalname: 'second.jpg',
+                size: 1536,
+            },
+        ]
+
+        const validator = Validator.make(
+            { avatar, attachments },
+            {
+                avatar: ['file', 'image', 'extensions:png'] as const,
+                attachments: ['files', 'mimes:png,jpg'] as const,
+            },
+        )
+
+        const validated = await validator.validate()
+
+        expectTypeOf(validated.avatar).toEqualTypeOf<typeof avatar>()
+        expectTypeOf(validated.attachments).toEqualTypeOf<typeof attachments>()
+
+        assert.deepEqual(validated, { avatar, attachments })
+    })
+
     it('returns validated request-scoped uploaded files from validate()', async function () {
         const avatar = {
             buffer: png1x1,
@@ -205,6 +263,38 @@ describe('File validator plugin', function () {
         })
 
         assert.deepEqual(await validator.validate(), { attachments })
+    })
+
+    it('supports wildcard helpers with array-style rule inputs', async function () {
+        const attachments = [
+            {
+                buffer: png1x1,
+                mimetype: 'image/png',
+                originalname: 'first.png',
+                size: 1024,
+            },
+            {
+                buffer: png1x1,
+                mimetype: 'image/jpeg',
+                originalname: 'second.jpg',
+                size: 1024,
+            },
+        ]
+
+        const validator = Validator.make(
+            { attachments },
+            createWildcardFileRules(
+                'attachments',
+                ['file', 'image', 'extensions:png,jpg'],
+                ['files'],
+            ),
+        )
+
+        const validated = await validator.validate()
+
+        expectTypeOf(validated.attachments).toEqualTypeOf<typeof attachments>()
+
+        assert.deepEqual(validated, { attachments })
     })
 
     it('supports extensions as a dedicated rule', async function () {

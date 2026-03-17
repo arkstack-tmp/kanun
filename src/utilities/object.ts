@@ -102,46 +102,6 @@ export function dotify (
 };
 
 /**
- * Check if the value is an object
- * 
- * @param value 
- * @returns 
- */
-export function isObject (value: any) {
-    return value && typeof value === 'object' && !Array.isArray(value)
-};
-
-/**
- * Deeply merge nested objects
- * 
- * @param target 
- * @param source 
- * @returns 
- */
-export function mergeDeep (target: GenericObject, source: GenericObject): GenericObject {
-    const output = Object.assign({}, target)
-
-    if (!isObject(target) || !isObject(source)) {
-        return output
-    }
-
-    for (const key in source) {
-        if (isObject(source[key])) {
-            if (!target[key]) {
-                Object.assign(output, { [key]: source[key] })
-            } else {
-                output[key] = mergeDeep(target[key], source[key])
-            }
-
-        } else {
-            Object.assign(output, { [key]: source[key] })
-        }
-    }
-
-    return output
-}
-
-/**
  * Check if objects are deep equal
  * 
  * @param firstParam 

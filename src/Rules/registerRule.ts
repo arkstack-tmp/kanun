@@ -1,4 +1,4 @@
-import { addImplicitRule, buildValidationMethodName } from 'karun'
+import { addImplicitRule, buildValidationMethodName } from 'kanun'
 
 import { GenericCallable } from 'src/Contracts/IGeneric'
 import replaceAttributePayload from '../payloads/replaceAttributePayload'

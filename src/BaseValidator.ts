@@ -11,7 +11,7 @@ import {
     TRule
 } from './Contracts/BaseContract'
 import { getValidatorContext, useValidatorContext } from './Context'
-import { deepFind, deepSet, dotify, isObject } from './utilities/object'
+import { deepFind, deepSet, dotify } from './utilities/object'
 import { getFormattedAttribute, getKeyCombinations, getMessage } from './utilities/formatMessages'
 import { getNumericRules, isImplicitRule } from './utilities/general'
 
@@ -27,6 +27,7 @@ import replaceAttributes from './validators/replaceAttributes'
 import validateAttributes from './validators/validateAttributes'
 import validationData from './validators/validationData'
 import validationRuleParser from './validators/validationRuleParser'
+import { isObject } from './utilities/helpers'
 
 export class BaseValidator<D extends GenericObject = GenericObject> {
     /**

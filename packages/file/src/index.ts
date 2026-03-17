@@ -410,15 +410,15 @@ function normalizeRuleInput (rules: WildcardRuleInput): string[] {
  * @param collectionRules       The rules to apply to the array of files as a whole.
  * @returns                     An object containing the normalized rules for the attribute.
  */
-export function createWildcardFileRules (
-    attribute: string,
+export function createWildcardFileRules<TAttribute extends string> (
+    attribute: TAttribute,
     itemRules: WildcardRuleInput,
     collectionRules: WildcardRuleInput = 'files',
-): Record<string, string[]> {
+): Record<TAttribute | `${TAttribute}.*`, string[]> {
     return {
         [attribute]: normalizeRuleInput(collectionRules),
         [`${attribute}.*`]: normalizeRuleInput(itemRules),
-    }
+    } as Record<TAttribute | `${TAttribute}.*`, string[]>
 }
 
 /**
