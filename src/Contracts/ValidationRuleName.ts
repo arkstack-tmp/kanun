@@ -4,17 +4,28 @@ import type Regex from '../Rules/regex'
 import type RequiredIf from '../Rules/requiredIf'
 import RuleContract from 'src/Rules/IRuleContract'
 
-export interface CustomValidationRuleNameMap {
-    [key: string]: any
-}
+export type ValidationRuleAutocompleteKind = 'plain' | 'paramable'
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ValidationRuleAutocompleteMap { }
+
+/**
+ * Backward-compatible alias for older plugin augmentations.
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface CustomValidationRuleNameMap { }
+
+type LiteralUnion<T extends U, U = string> = T | (U & Record<never, never>)
+
+type PluginValidationRuleNameMap = ValidationRuleAutocompleteMap & CustomValidationRuleNameMap
 
 export type CustomParamableValidationRuleName = Extract<{
-    [K in keyof CustomValidationRuleNameMap]: CustomValidationRuleNameMap[K] extends 'paramable' ? K : never
-}[keyof CustomValidationRuleNameMap], string>
+    [K in keyof PluginValidationRuleNameMap]: PluginValidationRuleNameMap[K] extends 'paramable' ? K : never
+}[keyof PluginValidationRuleNameMap], string>
 
 export type CustomPlainRuleName = Extract<{
-    [K in keyof CustomValidationRuleNameMap]: CustomValidationRuleNameMap[K] extends 'plain' ? K : never
-}[keyof CustomValidationRuleNameMap], string>
+    [K in keyof PluginValidationRuleNameMap]: PluginValidationRuleNameMap[K] extends 'plain' ? K : never
+}[keyof PluginValidationRuleNameMap], string>
 
 export type ParamableValidationRuleName =
     | 'accepted_if'
@@ -86,12 +97,19 @@ export type ValidationRuleName = ParamableValidationRuleName | PlainRuleName
 
 type MethodRules = Regex | In | NotIn | RequiredIf
 
+type ParamableRuleString = `${ParamableValidationRuleName}:${string}`
+
+type ValidationRuleString = LiteralUnion<ValidationRuleName | ParamableRuleString>
+
 /**
  * Single rule value (supports autocomplete + arbitrary strings + RuleContract instances)
  */
-type RuleName = ValidationRuleName | `${ParamableValidationRuleName}:${string}` | RuleContract | MethodRules
+export type ValidationRuleEntry = ValidationRuleString | RuleContract | MethodRules
 
 export type ValidationRuleSet =
-    | RuleName
-    | RuleName[]
-    | `${ValidationRuleName}${string & `|${string}`}`
+    | ValidationRuleEntry
+    | readonly ValidationRuleEntry[]
+    | LiteralUnion<
+        | `${ValidationRuleName}${string & `|${string}`}`
+        | `${ParamableRuleString}${string & `|${string}`}`
+    >

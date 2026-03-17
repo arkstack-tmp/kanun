@@ -239,4 +239,29 @@ export const examplePlugin = definePlugin({
 });
 ```
 
+### Add Rule Autocomplete For Plugin Users
+
+If your plugin adds custom rules, you can also augment Kanun's rule autocomplete so array-style rule definitions suggest your rule names in TypeScript.
+
+```ts
+declare module 'kanun' {
+  interface ValidationRuleAutocompleteMap {
+    starts_with_kanun: 'plain';
+    kanun_format: 'paramable';
+  }
+}
+```
+
+Use `'plain'` for rules without parameters and `'paramable'` for rules used like `rule:value`.
+
+That makes plugin rules show up in array syntax such as:
+
+```ts
+const rules = {
+  name: ['required', 'starts_with_kanun', 'kanun_format:strict'],
+};
+```
+
+This only affects TypeScript autocomplete and typing. You still need to register the runtime rule implementation inside your plugin with `registerRule(...)`.
+
 If a plugin needs runtime state, document the expected shape of `.withContext()` and provide adapters when framework integration is common.

@@ -8,7 +8,7 @@ import { ArrayBufferReadable, DimensionConstraints, FileLike, FileRuleExecutionC
 export * from './adapters'
 
 declare module 'kanun' {
-    interface CustomValidationRuleNameMap {
+    interface ValidationRuleAutocompleteMap {
         dimensions: 'paramable'
         extensions: 'paramable'
         file: 'plain'

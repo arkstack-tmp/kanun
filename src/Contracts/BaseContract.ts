@@ -3,9 +3,10 @@
 import BaseRule from '../Rules/baseRule'
 import { GenericObject } from './IGeneric'
 import RuleContract from '../Rules/IRuleContract'
+import type { ValidationRuleEntry } from './ValidationRuleName'
 import replaceAttributePayload from '../payloads/replaceAttributePayload'
 
-export type InitialRule = string | ValidationCallback | RuleContract | BaseRule;
+export type InitialRule = ValidationRuleEntry | ValidationCallback | BaseRule;
 
 export type TRule = string | RuleContract;
 
