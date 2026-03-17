@@ -394,7 +394,7 @@ describe('Integer', function () {
       assert.ok(validator.validate())
     })
     it('Validation should succeed when value is of type number and strict rule is added', function () {
-      validator.setData({ valu: 2 }).setRules({ value: 'integer|strict' })
+      validator.setData({ value: 2 }).setRules({ value: 'integer|strict' } as never)
       assert.ok(validator.validate())
     })
   })
@@ -466,7 +466,7 @@ describe('Numeric', function () {
       assert.ok(validator.validate())
     })
     it('Validation should succeed when value is of type number and strict rule is added', function () {
-      validator.setData({ valu: -2.3 }).setRules({ value: 'numeric|strict' })
+      validator.setData({ value: -2.3 }).setRules({ value: 'numeric|strict' } as never)
       assert.ok(validator.validate())
     })
   })
@@ -613,7 +613,7 @@ describe('Size', function () {
 
 describe('Sometimes', function () {
   it('Validation should succeed if the field is not present', function () {
-    validator.setData({ first: 'jad' }).setRules({ first: 'required', last: 'sometimes|required|string' })
+    validator.setData({ first: 'jad' }).setRules({ first: 'required', last: 'sometimes|required|string' } as never)
     assert.ok(validator.validate())
 
   })
