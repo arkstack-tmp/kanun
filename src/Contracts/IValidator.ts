@@ -4,6 +4,7 @@ import type { BaseValidationRuleClass } from './RuleBuilder'
 import type { IDatabaseDriver } from './IDatabaseDriver'
 import type { IMessageBag } from './IMessageBag'
 import type { ValidationRuleSet } from './ValidationRuleName'
+import type { ValidatorPlugin } from '../Plugin'
 
 export declare class IValidator<
     D extends Record<string, any> = any,
@@ -28,6 +29,10 @@ export declare class IValidator<
     ): IValidator<D, R>
 
     static useDatabase (driver: IDatabaseDriver): typeof IValidator
+
+    static use (plugin: ValidatorPlugin): typeof IValidator
+
+    static useContext (context: Record<string, any>): typeof IValidator
 
     /**
      * Run the validator and store results.
@@ -57,6 +62,12 @@ export declare class IValidator<
      * Stop validation on first failure.
      */
     stopOnFirstFailure (): this
+
+    use (plugin: ValidatorPlugin): this
+
+    withContext (context: Record<string, any>): this
+
+    getContext (): Record<string, any>
 
     /**
      * Get the data that passed validation.

@@ -4,6 +4,18 @@ import type Regex from '../Rules/regex'
 import type RequiredIf from '../Rules/requiredIf'
 import RuleContract from 'src/Rules/IRuleContract'
 
+export interface CustomValidationRuleNameMap {
+    [key: string]: any
+}
+
+export type CustomParamableValidationRuleName = Extract<{
+    [K in keyof CustomValidationRuleNameMap]: CustomValidationRuleNameMap[K] extends 'paramable' ? K : never
+}[keyof CustomValidationRuleNameMap], string>
+
+export type CustomPlainRuleName = Extract<{
+    [K in keyof CustomValidationRuleNameMap]: CustomValidationRuleNameMap[K] extends 'plain' ? K : never
+}[keyof CustomValidationRuleNameMap], string>
+
 export type ParamableValidationRuleName =
     | 'accepted_if'
     | 'after'
@@ -38,6 +50,7 @@ export type ParamableValidationRuleName =
     | 'size'
     | 'starts_with'
     | 'unique'
+    | CustomParamableValidationRuleName
 
 export type PlainRuleName =
     | 'accepted'
@@ -67,6 +80,7 @@ export type PlainRuleName =
     | 'url'
     | 'hex'
     | 'uuid'
+    | CustomPlainRuleName
 
 export type ValidationRuleName = ParamableValidationRuleName | PlainRuleName
 

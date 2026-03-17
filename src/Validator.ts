@@ -1,6 +1,8 @@
 import { BaseValidationRuleClass, CustomValidationRules } from './Contracts/RuleBuilder'
 import { DotPaths, MessagesForRules, RulesForData, type ValidatedByRules } from './Contracts/ValidatorContracts'
+import { getValidatorContext, useValidatorContext } from './Context'
 import { make, register } from './Core'
+import { deepFind, deepSet } from './utilities/object'
 
 import type BaseValidator from './BaseValidator'
 import { ExtendedRules } from './Rules/ExtendedRules'
@@ -8,6 +10,7 @@ import type { IDatabaseDriver } from './Contracts/IDatabaseDriver'
 import { IValidator } from './Contracts/IValidator'
 import Lang from './Lang'
 import { MessageBag } from './utilities/MessageBag'
+import { usePlugin, type ValidatorPlugin } from './Plugin'
 import { ValidationException } from './ValidationException'
 import { ValidationRule } from './ValidationRule'
 import { ValidationRuleSet } from './Contracts/ValidationRuleName'
@@ -33,6 +36,7 @@ export class Validator<
         new ExtendedRules()
     ]
     private shouldStopOnFirstFailure = false
+    private context: Record<string, any> = {}
 
     constructor(
         data: D,
@@ -68,6 +72,41 @@ export class Validator<
     static useDatabase (driver: IDatabaseDriver) {
         Validator.defaultDatabaseDriver = driver
         return Validator
+    }
+
+    /**
+     * Set the validator's context.
+     * 
+     * @param context 
+     * @returns 
+     */
+    static useContext (context: Record<string, any> = {}): typeof Validator {
+        useValidatorContext(context)
+        return this
+    }
+
+    /**
+     * Register a plugin with the validator. 
+     * Plugins can add rules, messages, and even override existing rules and messages.
+     * 
+     * @param plugin The plugin to register
+     * @returns The Validator class for chaining
+     */
+    static use (plugin: ValidatorPlugin): typeof Validator {
+        usePlugin(plugin)
+        return this
+    }
+
+    /**
+     * Register a plugin with the validator. 
+     * Plugins can add rules, messages, and even override existing rules and messages.
+     * 
+     * @param plugin The plugin to register
+     * @returns The Validator instance for chaining
+     */
+    use (plugin: ValidatorPlugin): this {
+        Validator.use(plugin)
+        return this
     }
 
     /**
@@ -126,6 +165,31 @@ export class Validator<
         return this
     }
 
+    /**
+     * Set the validator's context. 
+     * This is useful for custom rules that need access to additional data or services.
+     * 
+     * @param context 
+     * @returns 
+     */
+    withContext (context: Record<string, any> = {}): this {
+        this.context = context
+        return this
+    }
+
+    /**
+     * Get the validator's context. 
+     * This is useful for custom rules that need access to additional data or services.
+     * 
+     * @returns The current context object
+     */
+    getContext (): Record<string, any> {
+        return {
+            ...getValidatorContext(),
+            ...this.context,
+        }
+    }
+
 
     /**
      * Get the data that passed validation.
@@ -133,9 +197,18 @@ export class Validator<
     public validatedData (): ValidatedByRules<D, R> {
         const validKeys = Object.keys(this.rules)
         const clean: Record<string, any> = {}
+
         for (const key of validKeys) {
-            if (this.data[key] !== undefined) clean[key] = this.data[key]
+            const value = deepFind(this.data, key)
+            const resolvedValue = typeof value !== 'undefined'
+                ? value
+                : deepFind(this.getContext().requestFiles ?? {}, key)
+
+            if (typeof resolvedValue !== 'undefined') {
+                deepSet(clean, key, resolvedValue)
+            }
         }
+
         return clean as ValidatedByRules<D, R>
     }
 
@@ -293,6 +366,7 @@ export class Validator<
             .setData(this.data)
             .setRules(this.rules as never)
             .setCustomMessages(this.#messages)
+            .withContext(this.getContext())
             .stopOnFirstFailure(this.shouldStopOnFirstFailure)
 
         this.passing = await instance.validateAsync()

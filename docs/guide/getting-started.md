@@ -104,4 +104,5 @@ console.log(passes); // true
 - Learn all supported rules in [Validation Rules](/guide/validation-rules)
 - Configure DB-backed `exists`/`unique` in [Database Driver](/guide/database-driver)
 - Create reusable rule classes in [Custom Rules](/guide/custom-rules)
+- Add installable extensions and file uploads in [Plugins](/guide/plugins)
 - Handle and shape errors in [Error Handling](/guide/error-handling)

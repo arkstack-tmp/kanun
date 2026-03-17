@@ -21,9 +21,15 @@ class validateAttributes {
      */
     rules: Rules
 
-    constructor(data: object = {}, rules: Rules = {}) {
+    /**
+     * Stores validator context that plugins can consume.
+     */
+    context: GenericObject
+
+    constructor(data: object = {}, rules: Rules = {}, context: GenericObject = {}) {
         this.data = data
         this.rules = rules
+        this.context = context
     };
 
     /**

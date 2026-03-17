@@ -13,6 +13,12 @@ Framework-agnostic TypeScript-first validation library. Provides a rich set of b
 npm install kanun
 ```
 
+For file validation, install the separate plugin package:
+
+```bash
+npm install kanun kanun-plugin-file
+```
+
 ## Features
 
 - Rule-based validation — Supports common rules like required, min, max, email, url, numeric, boolean, in, regex, etc.
@@ -35,6 +41,7 @@ npm install kanun
 
 - TypeScript-first design — Full type inference for rules, messages, and validated data.
 - Chainable API — Optional fluent syntax for building validators.
+- Plugin system — Install optional rule packs without expanding the core bundle.
 
 ## Usage
 
@@ -147,6 +154,14 @@ const validator = new Validator(
   { username: 'unique:users,username' },
 );
 ```
+
+### Plugins
+
+Kanun supports installable plugins such as `kanun-plugin-file`.
+
+Plugin usage, file validation rules, and framework upload adapters are fully documented:
+
+- https://arkstack-hq.github.io/kanun/guide/plugins
 
 For the complete guide and API reference, visit the docs site: https://arkstack-hq.github.io/kanun
 

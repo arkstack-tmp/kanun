@@ -3,6 +3,7 @@
 import BaseRule from '../Rules/baseRule'
 import RuleContract from '../Rules/IRuleContract'
 import { TRule } from '../Contracts/BaseContract'
+import { getValidationSize } from '../Plugin'
 
 const implicitRues: string[] = [
     'accepted', 'accepted_if', 'declined', 'declined_if',
@@ -14,16 +15,7 @@ const implicitRues: string[] = [
  * Get the size of a value based on its type
  */
 export function getSize (value: any, hasNumericRule: boolean = false): number {
-
-    if (typeof value === 'number' || (isNaN(value) === false && hasNumericRule === true)) {
-        return Number(value)
-    } else if (typeof value === 'string' || Array.isArray(value)) {
-        return value.length
-    } else if (typeof value === 'object' && value !== null) {
-        return Object.keys(value).length
-    }
-
-    return -1
+    return getValidationSize(value, hasNumericRule)
 };
 
 /**

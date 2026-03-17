@@ -2,8 +2,10 @@ import type { CustomAttributes, CustomMessages, InitialRule, InitialRules } from
 
 import BaseValidator from './BaseValidator'
 import ErrorBag from './validators/errorBag'
+import { getValidatorContext, runWithValidatorContext, useValidatorContext } from './Context'
 import { GenericObject } from 'src/Contracts/IGeneric'
 import { default as PasswordRule } from './Rules/password'
+import { usePlugin } from './Plugin'
 
 export class Password extends PasswordRule { };
 
@@ -20,6 +22,10 @@ export {
     InitialRules,
     InitialRule,
     ErrorBag,
+    getValidatorContext,
+    runWithValidatorContext,
+    usePlugin,
+    useValidatorContext,
 }
 
 export * from './Rules/registerRule'

@@ -37,6 +37,7 @@ export default defineConfig({
           { text: 'Validation Rules', link: '/guide/validation-rules' },
           { text: 'Database Driver', link: '/guide/database-driver' },
           { text: 'Custom Rules', link: '/guide/custom-rules' },
+          { text: 'Plugins', link: '/guide/plugins' },
           { text: 'Error Handling', link: '/guide/error-handling' },
         ]
       },

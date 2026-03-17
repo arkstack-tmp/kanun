@@ -10,6 +10,7 @@ import {
     Rules,
     TRule
 } from './Contracts/BaseContract'
+import { getValidatorContext, useValidatorContext } from './Context'
 import { deepFind, deepSet, dotify, isObject } from './utilities/object'
 import { getFormattedAttribute, getKeyCombinations, getMessage } from './utilities/formatMessages'
 import { getNumericRules, isImplicitRule } from './utilities/general'
@@ -20,6 +21,7 @@ import Lang from './Lang'
 import Password from './Rules/password'
 import RuleContract from './Rules/IRuleContract'
 import { buildValidationMethodName } from './utilities/build'
+import { usePlugin, type ValidatorPlugin } from './Plugin'
 import replaceAttributePayload from './payloads/replaceAttributePayload'
 import replaceAttributes from './validators/replaceAttributes'
 import validateAttributes from './validators/validateAttributes'
@@ -27,7 +29,6 @@ import validationData from './validators/validationData'
 import validationRuleParser from './validators/validationRuleParser'
 
 export class BaseValidator<D extends GenericObject = GenericObject> {
-
     /**
      * The lang used to return error messages
      */
@@ -81,6 +82,11 @@ export class BaseValidator<D extends GenericObject = GenericObject> {
      */
     customAttributes: CustomAttributes<D>
 
+    /**
+     * Arbitrary per-validator context for plugins.
+     */
+    private context: GenericObject = {}
+
 
     constructor(data: D, rules: InitialRules<D>, customMessages: CustomMessages<D> = {}, customAttributes: CustomAttributes<D> = {}) {
         this.data = data
@@ -91,6 +97,21 @@ export class BaseValidator<D extends GenericObject = GenericObject> {
         this.addRules(rules)
         this.messages = new ErrorBag()
     };
+
+    static use (plugin: ValidatorPlugin): typeof BaseValidator {
+        usePlugin(plugin)
+        return this
+    }
+
+    static useContext (context: GenericObject = {}): typeof BaseValidator {
+        useValidatorContext(context)
+        return this
+    }
+
+    use (plugin: ValidatorPlugin): this {
+        BaseValidator.use(plugin)
+        return this
+    }
 
     setData<ND extends GenericObject> (data: ND): BaseValidator<ND> {
         this.data = data as unknown as D
@@ -109,29 +130,86 @@ export class BaseValidator<D extends GenericObject = GenericObject> {
         return this
     };
 
+
+    /**
+     * Set the validator's context.
+     */
+    withContext (context: GenericObject = {}): this {
+        this.context = context
+        return this
+    }
+
+    /**
+     * Get the validator's context. 
+     * This is useful for custom rules that need access to additional data or services.
+     * 
+     * @returns The current context object
+     */
+    getContext (): GenericObject {
+        return {
+            ...getValidatorContext(),
+            ...this.context,
+        }
+    }
+
+    /**
+     * Get the current language used by the validator. 
+     * 
+     * @returns 
+     */
     getLang (): string {
         return this.lang
     }
 
+    /**
+     * Set custom error messages for the validator. 
+     * 
+     * @param customMessages 
+     * @returns 
+     */
     setCustomMessages (customMessages: CustomMessages<D> = {}): this {
         this.customMessages = dotify(customMessages)
         return this
     };
 
+    /**
+     * Set custom attribute names for the validator.
+     * 
+     * @param customAttributes 
+     * @returns 
+     */
     setCustomAttributes (customAttributes: CustomAttributes<D> = {}): this {
         this.customAttributes = dotify(customAttributes)
         return this
     };
 
+    /**
+     * Set whether the validator should stop validating after the first failure.
+     * 
+     * @param stopOnFirstFailure 
+     * @returns 
+     */
     stopOnFirstFailure (stopOnFirstFailure: boolean = true): this {
         this.stopOnFirstFailureFlag = stopOnFirstFailure
         return this
     };
 
+    /**
+     * Get the error messages related to the validation.
+     * 
+     * @returns 
+     */
     errors (): ErrorBag {
         return this.messages
     };
 
+    /**
+     * Clear the error messages for the given keys. 
+     * If no keys are provided, all error messages will be cleared.
+     * 
+     * @param keys  The keys of the error messages to clear
+     * @returns     The updated ErrorBag instance
+     */
     clearErrors (keys: string[] = []): ErrorBag {
         this.messages = this.messages.clear(keys).clone()
         return this.messages
@@ -161,7 +239,7 @@ export class BaseValidator<D extends GenericObject = GenericObject> {
         if (!isObject(this.data)) {
             throw 'The data attribute must be an object'
         }
-        this.validateAttributes = new validateAttributes(this.data, this.rules)
+        this.validateAttributes = new validateAttributes(this.data, this.rules, this.getContext())
 
         if (!key) {
             this.runAllValidations()
@@ -180,7 +258,7 @@ export class BaseValidator<D extends GenericObject = GenericObject> {
             throw 'The data attribute must be an object'
         }
 
-        this.validateAttributes = new validateAttributes(this.data, this.rules)
+        this.validateAttributes = new validateAttributes(this.data, this.rules, this.getContext())
         if (!key) {
             await this.runAllValidationsAsync()
             return this.messages.keys().length === 0
@@ -193,6 +271,9 @@ export class BaseValidator<D extends GenericObject = GenericObject> {
 
     /**
      * Get the displayable name of the attribute.
+     * 
+     * @param attribute 
+     * @returns 
      */
     getDisplayableAttribute (attribute: string): string {
         const primaryAttribute: string = this.getPrimaryAttribute(attribute)
@@ -280,7 +361,7 @@ export class BaseValidator<D extends GenericObject = GenericObject> {
      */
     private runAllValidations (): void {
         this.messages = new ErrorBag()
-        this.validateAttributes = new validateAttributes(this.data, this.rules)
+        this.validateAttributes = new validateAttributes(this.data, this.rules, this.getContext())
 
         for (const property in this.rules) {
             if (this.runValidation(property) === false) {
@@ -294,7 +375,7 @@ export class BaseValidator<D extends GenericObject = GenericObject> {
      */
     private async runAllValidationsAsync (): Promise<void> {
         this.messages = new ErrorBag()
-        this.validateAttributes = new validateAttributes(this.data, this.rules)
+        this.validateAttributes = new validateAttributes(this.data, this.rules, this.getContext())
 
         for (const property in this.rules) {
             if (await this.runValidationAsync(property) === false) {

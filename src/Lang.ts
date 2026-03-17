@@ -27,6 +27,11 @@ export class Lang {
     static translations: GenericObject = {}
 
     /**
+     * Store translations contributed by plugins.
+     */
+    static translationExtensions: GenericObject = {}
+
+    /**
      * Stores the messages that are already loaded
      */
     static messages: GenericObject = {}
@@ -61,6 +66,20 @@ export class Lang {
     static setTranslationObject (translations: GenericObject): void {
         this.translations = translations
         this.existingLangs = Array.from(new Set([...this.existingLangs, ...Object.keys(translations)]))
+        this.resetLoadedMessages()
+        this.setDefaultLang(this.defaultLang)
+    }
+
+    /**
+     * Merge additional translations into the global catalog.
+     */
+    static extendTranslationObject (translations: GenericObject): void {
+        this.translationExtensions = mergeDeep(this.translationExtensions, translations)
+        this.existingLangs = Array.from(new Set([
+            ...this.existingLangs,
+            ...Object.keys(translations),
+        ]))
+        this.resetLoadedMessages()
         this.setDefaultLang(this.defaultLang)
     }
 
@@ -86,6 +105,10 @@ export class Lang {
         // check if the lang translations exist in the library and load them
         if (Object.prototype.hasOwnProperty.call(locales, lang)) {
             this.fallbackMessages = mergeDeep(this.fallbackMessages, locales[lang as never])
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.translationExtensions, lang)) {
+            this.fallbackMessages = mergeDeep(this.fallbackMessages, this.translationExtensions[lang])
         }
 
         // check if the lang translations exit in the object passed by the user
@@ -122,10 +145,19 @@ export class Lang {
             this.messages[lang] = mergeDeep({}, this.fallbackMessages)
         }
 
+        if (Object.prototype.hasOwnProperty.call(this.translationExtensions, lang)) {
+            this.messages[lang] = mergeDeep(this.messages[lang], this.translationExtensions[lang])
+        }
+
         // check if the lang translations exist in the object passed by the user
         if (Object.prototype.hasOwnProperty.call(this.translations, lang)) {
             this.messages[lang] = mergeDeep(this.messages[lang], this.translations[lang])
         }
+    }
+
+    private static resetLoadedMessages (): void {
+        this.messages = {}
+        this.fallbackMessages = locales.en
     }
 }
 

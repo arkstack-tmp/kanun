@@ -4,22 +4,14 @@ import { CustomMessages } from '../Contracts/BaseContract'
 import { GenericObject } from 'src/Contracts/IGeneric'
 import Lang from '../Lang'
 import { dotify } from './object'
+import { getValidationMessageType } from '../Plugin'
 import { isSizeRule } from './general'
 
 /**
  * Get the message type based on the value. The message type is used essentially for size rules
  */
 function getMesageType (value: any, hasNumericRule: boolean = false): string {
-
-    if (typeof value === 'number' || typeof value === 'undefined' || (isNaN(value) === false && hasNumericRule === true)) {
-        return 'number'
-    }
-
-    if (Array.isArray(value)) {
-        return 'array'
-    }
-
-    return typeof value
+    return getValidationMessageType(value, hasNumericRule)
 };
 
 /**

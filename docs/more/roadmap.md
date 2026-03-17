@@ -14,4 +14,6 @@ The plugin system will allow developers to:
 
 This will enable a vibrant ecosystem of plugins while keeping the core library lightweight and focused.
 
-[ ]Implemented
+[x] Implemented
+
+The initial plugin foundation now exists, including a separately installable file validation plugin.
