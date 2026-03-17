@@ -2,7 +2,7 @@
 
 Kanun supports installable plugins so framework-specific or optional validation behavior can live outside the core package.
 
-This keeps the base validator small while allowing packages such as `kanun-plugin-file` to add new rules, messages, and runtime helpers.
+This keeps the base validator small while allowing packages such as `@kanun-hq/plugin-file` to add new rules, messages, and runtime helpers.
 
 ## Installing a Plugin
 
@@ -11,15 +11,15 @@ Install the core package and the plugin you need:
 ::: code-group
 
 ```bash [npm]
-npm install kanun kanun-plugin-file
+npm install kanun @kanun-hq/plugin-file
 ```
 
 ```bash [pnpm]
-pnpm add kanun kanun-plugin-file
+pnpm add kanun @kanun-hq/plugin-file
 ```
 
 ```bash [yarn]
-yarn add kanun kanun-plugin-file
+yarn add kanun @kanun-hq/plugin-file
 ```
 
 :::
@@ -28,7 +28,7 @@ Register the plugin once during app startup:
 
 ```ts
 import { Validator } from 'kanun';
-import { fileValidatorPlugin } from 'kanun-plugin-file';
+import { fileValidatorPlugin } from '@kanun-hq/plugin-file';
 
 Validator.use(fileValidatorPlugin);
 ```
@@ -100,24 +100,21 @@ When you want to validate uploaded file arrays with wildcard rules such as `atta
 - A collection rule for the parent field such as `attachments: files`
 - Per-item rules for `attachments.*`
 
-`kanun-plugin-file` includes helpers for that pattern:
+`@kanun-hq/plugin-file` includes helpers for that pattern:
 
 ```ts
 import {
   createWildcardFileRules,
   syncRequestFilesToData,
   useExpressUploadContext,
-} from 'kanun-plugin-file';
+} from '@kanun-hq/plugin-file';
 
 useExpressUploadContext(req);
 
 const validator = syncRequestFilesToData(
   Validator.make(
     {},
-    createWildcardFileRules(
-      'attachments',
-      'file|image|extensions:png,jpg',
-    ),
+    createWildcardFileRules('attachments', 'file|image|extensions:png,jpg'),
   ),
   ['attachments'],
 );
@@ -129,7 +126,7 @@ const passes = await validator.passes();
 
 ## Upload Adapters
 
-`kanun-plugin-file` also ships adapters that populate `.withContext()` automatically by normalizing uploaded files into `context.requestFiles`.
+`@kanun-hq/plugin-file` also ships adapters that populate `.withContext()` automatically by normalizing uploaded files into `context.requestFiles`.
 
 ### Express
 
@@ -140,7 +137,7 @@ import { Validator } from 'kanun';
 import {
   fileValidatorPlugin,
   useExpressUploadContext,
-} from 'kanun-plugin-file';
+} from '@kanun-hq/plugin-file';
 
 Validator.use(fileValidatorPlugin);
 
@@ -160,7 +157,7 @@ import { Validator } from 'kanun';
 import {
   fileValidatorPlugin,
   useFastifyUploadContext,
-} from 'kanun-plugin-file';
+} from '@kanun-hq/plugin-file';
 
 Validator.use(fileValidatorPlugin);
 
@@ -180,7 +177,10 @@ Use `useHonoUploadContext()` to consume files returned by `c.req.parseBody()` du
 
 ```ts
 import { Validator } from 'kanun';
-import { fileValidatorPlugin, useHonoUploadContext } from 'kanun-plugin-file';
+import {
+  fileValidatorPlugin,
+  useHonoUploadContext,
+} from '@kanun-hq/plugin-file';
 
 Validator.use(fileValidatorPlugin);
 
@@ -200,7 +200,7 @@ Use `useH3UploadContext()` in middleware or route setup. It can read files from 
 
 ```ts
 import { Validator } from 'kanun';
-import { fileValidatorPlugin, useH3UploadContext } from 'kanun-plugin-file';
+import { fileValidatorPlugin, useH3UploadContext } from '@kanun-hq/plugin-file';
 
 Validator.use(fileValidatorPlugin);
 

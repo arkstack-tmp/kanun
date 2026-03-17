@@ -1,8 +1,8 @@
-# kanun-plugin-file
+# @kanun-hq/plugin-file
 
 File validation plugin for Kanun.
 
-`kanun-plugin-file` adds first-class file rules, request-context helpers, framework adapters, and wildcard utilities for upload-heavy validation flows.
+`@kanun-hq/plugin-file` adds first-class file rules, request-context helpers, framework adapters, and wildcard utilities for upload-heavy validation flows.
 
 ## Features
 
@@ -16,15 +16,15 @@ File validation plugin for Kanun.
 ## Installation
 
 ```bash
-pnpm add kanun kanun-plugin-file
+pnpm add kanun @kanun-hq/plugin-file
 ```
 
 ```bash
-npm install kanun kanun-plugin-file
+npm install kanun @kanun-hq/plugin-file
 ```
 
 ```bash
-yarn add kanun kanun-plugin-file
+yarn add kanun @kanun-hq/plugin-file
 ```
 
 ## Registering The Plugin
@@ -33,7 +33,7 @@ Register the plugin once during application startup.
 
 ```ts
 import { Validator } from 'kanun';
-import { fileValidatorPlugin } from 'kanun-plugin-file';
+import { fileValidatorPlugin } from '@kanun-hq/plugin-file';
 
 Validator.use(fileValidatorPlugin);
 ```
@@ -42,7 +42,7 @@ If you need custom file lookup behavior, register your own instance instead:
 
 ```ts
 import { Validator } from 'kanun';
-import { createFileValidatorPlugin } from 'kanun-plugin-file';
+import { createFileValidatorPlugin } from '@kanun-hq/plugin-file';
 
 Validator.use(
   createFileValidatorPlugin({
@@ -318,7 +318,7 @@ import { Validator } from 'kanun';
 import {
   fileValidatorPlugin,
   useExpressUploadContext,
-} from 'kanun-plugin-file';
+} from '@kanun-hq/plugin-file';
 
 Validator.use(fileValidatorPlugin);
 
@@ -345,7 +345,7 @@ app.post('/profile', upload.single('avatar'), async (req, res) => {
 Use `withExpressUploadContext()` when you only want to enrich one validator instance.
 
 ```ts
-import { withExpressUploadContext } from 'kanun-plugin-file';
+import { withExpressUploadContext } from '@kanun-hq/plugin-file';
 
 const validator = withExpressUploadContext(
   Validator.make({}, { avatar: 'file|image|mimes:png' }),
@@ -368,7 +368,7 @@ import { Validator } from 'kanun';
 import {
   fileValidatorPlugin,
   useFastifyUploadContext,
-} from 'kanun-plugin-file';
+} from '@kanun-hq/plugin-file';
 
 Validator.use(fileValidatorPlugin);
 
@@ -402,7 +402,7 @@ app.post('/attachments', async () => {
 ### Single validator instance usage
 
 ```ts
-import { withFastifyUploadContext } from 'kanun-plugin-file';
+import { withFastifyUploadContext } from '@kanun-hq/plugin-file';
 
 const validator = await withFastifyUploadContext(
   Validator.make({}, { attachments: 'files|mimes:png,jpg' }),
@@ -421,7 +421,10 @@ Use `useHonoUploadContext()` to read files from `c.req.parseBody({ all: true })`
 ```ts
 import { Hono } from 'hono';
 import { Validator } from 'kanun';
-import { fileValidatorPlugin, useHonoUploadContext } from 'kanun-plugin-file';
+import {
+  fileValidatorPlugin,
+  useHonoUploadContext,
+} from '@kanun-hq/plugin-file';
 
 Validator.use(fileValidatorPlugin);
 
@@ -447,7 +450,7 @@ app.post('/profile', async (c) => {
 ### Single validator instance usage
 
 ```ts
-import { withHonoUploadContext } from 'kanun-plugin-file';
+import { withHonoUploadContext } from '@kanun-hq/plugin-file';
 
 const validator = await withHonoUploadContext(
   Validator.make({}, { avatar: 'file|image|mimetypes:image/png' }),
@@ -466,7 +469,7 @@ Use `useH3UploadContext()` inside middleware or handlers.
 ```ts
 import { H3 } from 'h3';
 import { Validator } from 'kanun';
-import { fileValidatorPlugin, useH3UploadContext } from 'kanun-plugin-file';
+import { fileValidatorPlugin, useH3UploadContext } from '@kanun-hq/plugin-file';
 
 Validator.use(fileValidatorPlugin);
 
@@ -499,7 +502,7 @@ app.post('/profile', async () => {
 ### Single validator instance usage
 
 ```ts
-import { withH3UploadContext } from 'kanun-plugin-file';
+import { withH3UploadContext } from '@kanun-hq/plugin-file';
 
 const validator = await withH3UploadContext(
   Validator.make({}, { avatar: 'file|image|mimetypes:image/png' }),
@@ -514,7 +517,7 @@ await validator.validate();
 Use `createWildcardFileRules()` when you want both collection-level and item-level rules.
 
 ```ts
-import { createWildcardFileRules } from 'kanun-plugin-file';
+import { createWildcardFileRules } from '@kanun-hq/plugin-file';
 
 const rules = createWildcardFileRules(
   'attachments',
@@ -538,7 +541,7 @@ import {
   createWildcardFileRules,
   syncRequestFilesToData,
   useExpressUploadContext,
-} from 'kanun-plugin-file';
+} from '@kanun-hq/plugin-file';
 
 useExpressUploadContext(req);
 
@@ -565,7 +568,7 @@ If your framework or upload pipeline stores files somewhere other than `context.
 
 ```ts
 import { Validator } from 'kanun';
-import { createFileValidatorPlugin } from 'kanun-plugin-file';
+import { createFileValidatorPlugin } from '@kanun-hq/plugin-file';
 
 Validator.use(
   createFileValidatorPlugin({

@@ -16,7 +16,7 @@ npm install kanun
 For file validation, install the separate plugin package:
 
 ```bash
-npm install kanun kanun-plugin-file
+npm install kanun @kanun-hq/plugin-file
 ```
 
 ## Features
@@ -157,7 +157,7 @@ const validator = new Validator(
 
 ### Plugins
 
-Kanun supports installable plugins such as `kanun-plugin-file`.
+Kanun supports installable plugins such as `@kanun-hq/plugin-file`.
 
 Plugin usage, file validation rules, and framework upload adapters are fully documented:
 

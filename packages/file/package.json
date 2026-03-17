@@ -1,19 +1,14 @@
 {
-    "name": "kanun-plugin-file",
+    "name": "@kanun-hq/plugin-file",
     "version": "0.1.0",
     "description": "File validation plugin for Kanun.",
     "type": "module",
     "files": [
         "dist"
     ],
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "exports": {
-        ".": {
-            "import": "./dist/index.js",
-            "require": "./dist/index.cjs"
-        },
+        ".": "./dist/index.js",
         "./package.json": "./package.json"
     },
     "homepage": "https://arkstack-hq.github.io/kanun",

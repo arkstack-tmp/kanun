@@ -464,7 +464,7 @@ export function createFileValidatorPlugin (
     pluginOptions = options
 
     return definePlugin({
-        name: 'kanun-plugin-file',
+        name: '@kanun-hq/plugin-file',
         install: ({ extendTranslations, registerRule, registerValueInspector }) => {
             registerValueInspector({
                 type: 'file',
