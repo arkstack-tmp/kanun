@@ -430,6 +430,8 @@ class validateAttributes {
 
         if (value === null || typeof value === 'undefined') {
             return false
+        } else if (typeof Blob !== 'undefined' && value instanceof Blob) {
+            return true
         } else if (typeof value === 'string' && value.trim() === '') {
             return false
         } else if (Array.isArray(value) && value.length < 1) {

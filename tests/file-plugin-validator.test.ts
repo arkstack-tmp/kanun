@@ -397,6 +397,43 @@ describe('File validator plugin', function () {
 describe('File upload adapters', function () {
     Validator.use(fileValidatorPlugin)
 
+    it('supports the required rule with an Express request instance', async () => {
+        const app = express()
+        const upload = multer({ storage: multer.memoryStorage() })
+
+        app.post('/required', upload.single('avatar'), async function (request, response) {
+            const validator = withExpressUploadContext(
+                Validator.make({}, { avatar: 'required|file|image|mimes:png' }),
+                request,
+            )
+
+            const validated = await validator.validate()
+
+            response.json({
+                hasAvatar: Object.prototype.hasOwnProperty.call(validated, 'avatar'),
+            })
+        })
+
+        const server = await listenHttpServer(app)
+
+        try {
+            const formData = new FormData()
+            formData.append('avatar', new File([png1x1], 'avatar.png', { type: 'image/png' }))
+
+            const response = await fetch(`${server.url}/required`, {
+                body: formData,
+                method: 'POST',
+            })
+
+            assert.equal(response.status, 200)
+            assert.deepEqual(await response.json(), {
+                hasAvatar: true,
+            })
+        } finally {
+            await server.close()
+        }
+    })
+
     it('attaches Express uploads to validator context using a real app request', async () => {
         const app = express()
         const upload = multer({ storage: multer.memoryStorage() })
@@ -428,6 +465,43 @@ describe('File upload adapters', function () {
             assert.deepEqual(await response.json(), {
                 hasAvatar: true,
                 passes: true,
+            })
+        } finally {
+            await server.close()
+        }
+    })
+
+    it('supports the required rule with a Fastify request instance', async () => {
+        const app = Fastify()
+        await app.register(multipart)
+
+        app.post('/required', async function (request) {
+            const validator = await withFastifyUploadContext(
+                Validator.make({}, { avatar: 'required|file|image|mimes:png' }),
+                request,
+            )
+
+            const validated = await validator.validate()
+
+            return {
+                hasAvatar: Object.prototype.hasOwnProperty.call(validated, 'avatar'),
+            }
+        })
+
+        const server = await listenFastifyServer(app)
+
+        try {
+            const formData = new FormData()
+            formData.append('avatar', new File([png1x1], 'avatar.png', { type: 'image/png' }))
+
+            const response = await fetch(`${server.url}/required`, {
+                body: formData,
+                method: 'POST',
+            })
+
+            assert.equal(response.status, 200)
+            assert.deepEqual(await response.json(), {
+                hasAvatar: true,
             })
         } finally {
             await server.close()
@@ -474,6 +548,36 @@ describe('File upload adapters', function () {
         }
     })
 
+    it('supports the required rule with a Hono request instance', async () => {
+        const app = new Hono()
+
+        app.post('/required', async function (context) {
+            const validator = await withHonoUploadContext(
+                Validator.make({}, { avatar: 'required|file|image|mimetypes:image/png' }),
+                context,
+            )
+
+            const validated = await validator.validate()
+
+            return context.json({
+                hasAvatar: Object.prototype.hasOwnProperty.call(validated, 'avatar'),
+            })
+        })
+
+        const formData = new FormData()
+        formData.append('avatar', new File([png1x1], 'avatar.png', { type: 'image/png' }))
+
+        const response = await app.request('/required', {
+            body: formData,
+            method: 'POST',
+        })
+
+        assert.equal(response.status, 200)
+        assert.deepEqual(await response.json(), {
+            hasAvatar: true,
+        })
+    })
+
     it('attaches Hono parsed body uploads to validator context using a real app request', async () => {
         const app = new Hono()
 
@@ -501,6 +605,34 @@ describe('File upload adapters', function () {
         assert.deepEqual(await response.json(), {
             hasAvatar: true,
             passes: true,
+        })
+    })
+
+    it('supports the required rule with an h3 request instance', async () => {
+        const app = new H3().post('/required', async function (event) {
+            const validator = await withH3UploadContext(
+                Validator.make({}, { avatar: 'required|file|image|mimetypes:image/png' }),
+                event,
+            )
+
+            const validated = await validator.validate()
+
+            return {
+                hasAvatar: Object.prototype.hasOwnProperty.call(validated, 'avatar'),
+            }
+        })
+
+        const formData = new FormData()
+        formData.append('avatar', new File([png1x1], 'avatar.png', { type: 'image/png' }))
+
+        const response = await app.request('/required', {
+            body: formData,
+            method: 'POST',
+        })
+
+        assert.equal(response.status, 200)
+        assert.deepEqual(await response.json(), {
+            hasAvatar: true,
         })
     })
 
