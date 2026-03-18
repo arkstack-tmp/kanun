@@ -341,10 +341,22 @@ export async function withFastifyUploadContext<TValidator extends ValidatorWithC
  * @returns 
  */
 export async function useFastifyUploadContext (request: FastifyLikeRequest): Promise<Record<string, any>> {
-    return useRequestFilesContext(await extractFastifyRequestFiles(request), {
+    const context = useValidatorContext()
+    const requestFiles = await extractFastifyRequestFiles(request)
+    const existingRequestFiles = isRecord(context.requestFiles)
+        ? context.requestFiles
+        : {}
+
+    Object.assign(context, {
         fastify: request,
         request,
+        requestFiles: {
+            ...existingRequestFiles,
+            ...requestFiles,
+        },
     })
+
+    return context
 }
 
 /**
@@ -386,12 +398,22 @@ export async function withHonoUploadContext<TValidator extends ValidatorWithCont
  * @returns 
  */
 export async function useHonoUploadContext (context: HonoLikeContext): Promise<Record<string, any>> {
+    const validatorContext = useValidatorContext()
     const parsedBody = await extractHonoParsedBody(context)
+    const existingRequestFiles = isRecord(validatorContext.requestFiles)
+        ? validatorContext.requestFiles
+        : {}
 
-    return useRequestFilesContext(extractNamedFilesFromRecord(parsedBody), {
+    Object.assign(validatorContext, {
         hono: context,
         request: context.req,
+        requestFiles: {
+            ...existingRequestFiles,
+            ...extractNamedFilesFromRecord(parsedBody),
+        },
     })
+
+    return validatorContext
 }
 
 /**
@@ -493,8 +515,20 @@ export async function withH3UploadContext<TValidator extends ValidatorWithContex
  * @returns 
  */
 export async function useH3UploadContext (event: H3LikeEvent): Promise<Record<string, any>> {
-    return useRequestFilesContext(await extractH3RequestFiles(event), {
+    const context = useValidatorContext()
+    const requestFiles = await extractH3RequestFiles(event)
+    const existingRequestFiles = isRecord(context.requestFiles)
+        ? context.requestFiles
+        : {}
+
+    Object.assign(context, {
         h3: event,
         request: event.req ?? event.request,
+        requestFiles: {
+            ...existingRequestFiles,
+            ...requestFiles,
+        },
     })
+
+    return context
 }

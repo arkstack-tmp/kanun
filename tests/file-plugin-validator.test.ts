@@ -719,6 +719,78 @@ describe('File upload adapters', function () {
         }
     })
 
+    it('supports the required rule through useExpressUploadContext with a real request instance', async () => {
+        const app = express()
+        const upload = multer({ storage: multer.memoryStorage() })
+
+        app.post('/middleware-required', upload.single('avatar'), async function (request, response) {
+            useExpressUploadContext(request)
+
+            const validated = await Validator
+                .make({}, { avatar: 'required|file|image|mimes:png' })
+                .validate()
+
+            response.json({
+                hasAvatar: Object.prototype.hasOwnProperty.call(validated, 'avatar'),
+            })
+        })
+
+        const server = await listenHttpServer(app)
+
+        try {
+            const formData = new FormData()
+            formData.append('avatar', new File([png1x1], 'avatar.png', { type: 'image/png' }))
+
+            const response = await fetch(`${server.url}/middleware-required`, {
+                body: formData,
+                method: 'POST',
+            })
+
+            assert.equal(response.status, 200)
+            assert.deepEqual(await response.json(), { hasAvatar: true })
+        } finally {
+            await server.close()
+        }
+    })
+
+    it('supports the required rule through useExpressUploadContext in separate middleware', async () => {
+        const app = express()
+        const upload = multer({ storage: multer.memoryStorage() })
+
+        app.use('/middleware-required-global', upload.single('avatar'))
+        app.use('/middleware-required-global', function (request, _response, next) {
+            useExpressUploadContext(request)
+            next()
+        })
+
+        app.post('/middleware-required-global', async function (_request, response) {
+            const validated = await Validator
+                .make({}, { avatar: 'required|file|image|mimes:png' })
+                .validate()
+
+            response.json({
+                hasAvatar: Object.prototype.hasOwnProperty.call(validated, 'avatar'),
+            })
+        })
+
+        const server = await listenHttpServer(app)
+
+        try {
+            const formData = new FormData()
+            formData.append('avatar', new File([png1x1], 'avatar.png', { type: 'image/png' }))
+
+            const response = await fetch(`${server.url}/middleware-required-global`, {
+                body: formData,
+                method: 'POST',
+            })
+
+            assert.equal(response.status, 200)
+            assert.deepEqual(await response.json(), { hasAvatar: true })
+        } finally {
+            await server.close()
+        }
+    })
+
     it('supports Fastify middleware-style upload context with a real hook', async () => {
         const app = Fastify()
         await app.register(multipart)
@@ -742,6 +814,7 @@ describe('File upload adapters', function () {
         try {
             const formData = new FormData()
             formData.append('attachments', new File([png1x1], 'first.png', { type: 'image/png' }))
+            formData.append('attachments', new File([png1x1], 'second.png', { type: 'image/png' }))
 
             const response = await fetch(`${server.url}/middleware-context`, {
                 body: formData,
@@ -750,6 +823,78 @@ describe('File upload adapters', function () {
 
             assert.equal(response.status, 200)
             assert.deepEqual(await response.json(), { passes: true })
+        } finally {
+            await server.close()
+        }
+    })
+
+    it('supports the required rule through useFastifyUploadContext with a real request instance', async () => {
+        const app = Fastify()
+        await app.register(multipart)
+
+        app.post('/middleware-required', async function (request) {
+            const uploadContext = await useFastifyUploadContext(request)
+
+            const validated = await Validator.make({}, { avatar: 'required|file|image|mimes:png' })
+                .withContext(uploadContext)
+                .validate()
+
+            return {
+                hasAvatar: Object.prototype.hasOwnProperty.call(validated, 'avatar'),
+            }
+        })
+
+        const server = await listenFastifyServer(app)
+
+        try {
+            const formData = new FormData()
+            formData.append('avatar', new File([png1x1], 'avatar.png', { type: 'image/png' }))
+
+            const response = await fetch(`${server.url}/middleware-required`, {
+                body: formData,
+                method: 'POST',
+            })
+
+            assert.equal(response.status, 200)
+            assert.deepEqual(await response.json(), { hasAvatar: true })
+        } finally {
+            await server.close()
+        }
+    })
+
+    it('supports the required rule through useFastifyUploadContext in a separate hook', async () => {
+        const app = Fastify()
+        await app.register(multipart)
+
+        app.addHook('preHandler', async function (request) {
+            if (request.url === '/middleware-required-global') {
+                await useFastifyUploadContext(request)
+            }
+        })
+
+        app.post('/middleware-required-global', async () => {
+            const validated = await Validator
+                .make({}, { avatar: 'required|file|image|mimes:png' })
+                .validate()
+
+            return {
+                hasAvatar: Object.prototype.hasOwnProperty.call(validated, 'avatar'),
+            }
+        })
+
+        const server = await listenFastifyServer(app)
+
+        try {
+            const formData = new FormData()
+            formData.append('avatar', new File([png1x1], 'avatar.png', { type: 'image/png' }))
+
+            const response = await fetch(`${server.url}/middleware-required-global`, {
+                body: formData,
+                method: 'POST',
+            })
+
+            assert.equal(response.status, 200)
+            assert.deepEqual(await response.json(), { hasAvatar: true })
         } finally {
             await server.close()
         }
@@ -783,6 +928,63 @@ describe('File upload adapters', function () {
         assert.deepEqual(await response.json(), { passes: true })
     })
 
+    it('supports the required rule through useHonoUploadContext with a real request instance', async () => {
+        const app = new Hono()
+
+        app.post('/middleware-required', async function (context) {
+            const uploadContext = await useHonoUploadContext(context)
+
+            const validated = await Validator.make({}, { avatar: 'required|file|image|mimetypes:image/png' })
+                .withContext(uploadContext)
+                .validate()
+
+            return context.json({
+                hasAvatar: Object.prototype.hasOwnProperty.call(validated, 'avatar'),
+            })
+        })
+
+        const formData = new FormData()
+        formData.append('avatar', new File([png1x1], 'avatar.png', { type: 'image/png' }))
+
+        const response = await app.request('/middleware-required', {
+            body: formData,
+            method: 'POST',
+        })
+
+        assert.equal(response.status, 200)
+        assert.deepEqual(await response.json(), { hasAvatar: true })
+    })
+
+    it('supports the required rule through useHonoUploadContext in separate middleware', async () => {
+        const app = new Hono()
+
+        app.use('/middleware-required-global', async function (context, next) {
+            await useHonoUploadContext(context)
+            await next()
+        })
+
+        app.post('/middleware-required-global', async function (context) {
+            const validated = await Validator
+                .make({}, { avatar: 'required|file|image|mimetypes:image/png' })
+                .validate()
+
+            return context.json({
+                hasAvatar: Object.prototype.hasOwnProperty.call(validated, 'avatar'),
+            })
+        })
+
+        const formData = new FormData()
+        formData.append('avatar', new File([png1x1], 'avatar.png', { type: 'image/png' }))
+
+        const response = await app.request('/middleware-required-global', {
+            body: formData,
+            method: 'POST',
+        })
+
+        assert.equal(response.status, 200)
+        assert.deepEqual(await response.json(), { hasAvatar: true })
+    })
+
     it('supports h3 middleware-style upload context with real middleware', async () => {
         const app = new H3()
 
@@ -809,6 +1011,63 @@ describe('File upload adapters', function () {
 
         assert.equal(response.status, 200)
         assert.deepEqual(await response.json(), { passes: true })
+    })
+
+    it('supports the required rule through useH3UploadContext with a real request instance', async () => {
+        const app = new H3()
+
+        app.post('/middleware-required', async function (event) {
+            const uploadContext = await useH3UploadContext(event)
+
+            const validated = await Validator.make({}, { avatar: 'required|file|image|mimetypes:image/png' })
+                .withContext(uploadContext)
+                .validate()
+
+            return {
+                hasAvatar: Object.prototype.hasOwnProperty.call(validated, 'avatar'),
+            }
+        })
+
+        const formData = new FormData()
+        formData.append('avatar', new File([png1x1], 'avatar.png', { type: 'image/png' }))
+
+        const response = await app.request('/middleware-required', {
+            body: formData,
+            method: 'POST',
+        })
+
+        assert.equal(response.status, 200)
+        assert.deepEqual(await response.json(), { hasAvatar: true })
+    })
+
+    it('supports the required rule through useH3UploadContext in separate middleware', async () => {
+        const app = new H3()
+
+        app.use('/middleware-required-global', async function (event, next) {
+            await useH3UploadContext(event)
+            return next()
+        })
+
+        app.post('/middleware-required-global', async () => {
+            const validated = await Validator
+                .make({}, { avatar: 'required|file|image|mimetypes:image/png' })
+                .validate()
+
+            return {
+                hasAvatar: Object.prototype.hasOwnProperty.call(validated, 'avatar'),
+            }
+        })
+
+        const formData = new FormData()
+        formData.append('avatar', new File([png1x1], 'avatar.png', { type: 'image/png' }))
+
+        const response = await app.request('/middleware-required-global', {
+            body: formData,
+            method: 'POST',
+        })
+
+        assert.equal(response.status, 200)
+        assert.deepEqual(await response.json(), { hasAvatar: true })
     })
 
     it('supports wildcard multi-file validation helpers', async () => {

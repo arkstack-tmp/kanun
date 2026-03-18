@@ -20,8 +20,14 @@ export function getValidatorContext (): ValidatorContext {
  * @returns 
  */
 export function useValidatorContext (context: ValidatorContext = {}): ValidatorContext {
+    const currentContext = validatorContextStorage.getStore()
+
+    if (currentContext) {
+        Object.assign(currentContext, context)
+        return currentContext
+    }
+
     const nextContext = {
-        ...getValidatorContext(),
         ...context,
     }
 
