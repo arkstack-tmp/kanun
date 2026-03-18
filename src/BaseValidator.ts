@@ -486,7 +486,7 @@ export class BaseValidator<D extends GenericObject = GenericObject> {
             parameters = this.replaceAsterisksInParameters(parameters, keys)
         }
 
-        const value = deepFind(this.data, attribute)
+        const value = this.getAttributeValue(attribute)
         const validatable: boolean = this.isValidatable(attribute, value, rule)
 
         if (rule instanceof RuleContract) {
@@ -610,7 +610,7 @@ export class BaseValidator<D extends GenericObject = GenericObject> {
     private isValidatable (attribute: string, value: any, rule: TRule): boolean {
         return this.presentOrRuleIsImplicit(attribute, value, rule) &&
             this.passesOptionalCheck(attribute) &&
-            this.isNotNullIfMarkedAsNullable(attribute, rule)
+            this.isNotNullIfMarkedAsNullable(attribute, value, rule)
     };
 
 
@@ -622,7 +622,7 @@ export class BaseValidator<D extends GenericObject = GenericObject> {
             return isImplicitRule(rule)
         }
 
-        return typeof deepFind(this.data, attribute) !== 'undefined' ||
+        return typeof value !== 'undefined' ||
             isImplicitRule(rule)
     }
 
@@ -635,21 +635,40 @@ export class BaseValidator<D extends GenericObject = GenericObject> {
         }
 
         const data = validationData.initializeAndGatherData(attribute, this.data)
+        const requestFiles = validationData.initializeAndGatherData(
+            attribute,
+            this.getContext().requestFiles ?? {},
+        )
 
         return Object.prototype.hasOwnProperty.call(data, attribute)
             || Object.prototype.hasOwnProperty.call(this.data, attribute)
+            || Object.prototype.hasOwnProperty.call(requestFiles, attribute)
+            || Object.prototype.hasOwnProperty.call(this.getContext().requestFiles ?? {}, attribute)
     };
 
     /**
      * Determine if the attribute fails the nullable check.
      */
-    private isNotNullIfMarkedAsNullable (attribute: string, rule: TRule): boolean {
+    private isNotNullIfMarkedAsNullable (attribute: string, value: any, rule: TRule): boolean {
         if (isImplicitRule(rule) || !validationRuleParser.hasRule(attribute, ['nullable'], this.rules)) {
             return true
         }
 
-        return deepFind(this.data, attribute) !== null
+        return value !== null
     };
+
+    /**
+     * Resolve an attribute value from validator data first, then request-scoped file context.
+     */
+    private getAttributeValue (attribute: string): any {
+        const dataValue = deepFind(this.data, attribute)
+
+        if (typeof dataValue !== 'undefined') {
+            return dataValue
+        }
+
+        return deepFind(this.getContext().requestFiles ?? {}, attribute)
+    }
 
 
     /**

@@ -48,7 +48,7 @@ async function listenHttpServer (handler: RequestListener) {
     }
 
     return {
-        close: async function () {
+        close: async () => {
             await new Promise<void>((resolve, reject) => {
                 server.close(error => {
                     if (error) {
@@ -74,7 +74,7 @@ async function listenFastifyServer (app: ReturnType<typeof Fastify>) {
     }
 
     return {
-        close: async function () {
+        close: async () => {
             await app.close()
         },
         url: `http://127.0.0.1:${(address as AddressInfo).port}`,
@@ -92,7 +92,7 @@ Validator.use(createFileValidatorPlugin({
 }))
 
 describe('File validator plugin', function () {
-    it('validates a request-scoped uploaded image', async function () {
+    it('validates a request-scoped uploaded image', async () => {
         const avatar = {
             buffer: png1x1,
             mimetype: 'image/png',
@@ -114,7 +114,7 @@ describe('File validator plugin', function () {
         assert.equal(await validator.passes(), true)
     })
 
-    it('uses file-specific size semantics for max and size rules', async function () {
+    it('uses file-specific size semantics for max and size rules', async () => {
         const avatar = {
             mimetype: 'image/png',
             originalname: 'avatar.png',
@@ -137,7 +137,7 @@ describe('File validator plugin', function () {
         assert.equal(await sizeValidator.passes(), true)
     })
 
-    it('validates arrays of files with files and mimes rules', async function () {
+    it('validates arrays of files with files and mimes rules', async () => {
         const attachments = [
             {
                 mimetype: 'image/png',
@@ -159,7 +159,7 @@ describe('File validator plugin', function () {
         assert.equal(await validator.passes(), true)
     })
 
-    it('supports array-style rule definitions for file validation', async function () {
+    it('supports array-style rule definitions for file validation', async () => {
         const avatar = {
             buffer: png1x1,
             mimetype: 'image/png',
@@ -178,7 +178,42 @@ describe('File validator plugin', function () {
         assert.deepEqual(await validator.validate(), { avatar })
     })
 
-    it('keeps array-style file rules type-safe in TypeScript', async function () {
+    it('treats request-scoped files as present for the required rule', async () => {
+        const avatar = {
+            buffer: png1x1,
+            mimetype: 'image/png',
+            originalname: 'avatar.png',
+            size: 2048,
+        }
+
+        const validator = Validator.make(
+            {},
+            {
+                avatar: ['required', 'file', 'image', 'extensions:png'],
+            },
+        ).withContext({
+            requestFiles: {
+                avatar,
+            },
+        })
+
+        assert.equal(await validator.passes(), true)
+        assert.deepEqual(await validator.validate(), { avatar })
+    })
+
+    it('still fails the required rule when a request-scoped file is missing', async () => {
+        const validator = Validator.make(
+            {},
+            {
+                avatar: ['required', 'file'],
+            },
+        )
+
+        assert.equal(await validator.passes(), false)
+        assert.equal(validator.errors().first('avatar'), 'The avatar field is required.')
+    })
+
+    it('keeps array-style file rules type-safe in TypeScript', async () => {
         const avatar = {
             buffer: png1x1,
             mimetype: 'image/png',
@@ -217,7 +252,7 @@ describe('File validator plugin', function () {
         assert.deepEqual(validated, { avatar, attachments })
     })
 
-    it('returns validated request-scoped uploaded files from validate()', async function () {
+    it('returns validated request-scoped uploaded files from validate()', async () => {
         const avatar = {
             buffer: png1x1,
             mimetype: 'image/png',
@@ -237,7 +272,7 @@ describe('File validator plugin', function () {
         assert.deepEqual(await validator.validate(), { avatar })
     })
 
-    it('returns validated request-scoped file arrays from validate()', async function () {
+    it('returns validated request-scoped file arrays from validate()', async () => {
         const attachments = [
             {
                 buffer: png1x1,
@@ -265,7 +300,7 @@ describe('File validator plugin', function () {
         assert.deepEqual(await validator.validate(), { attachments })
     })
 
-    it('supports wildcard helpers with array-style rule inputs', async function () {
+    it('supports wildcard helpers with array-style rule inputs', async () => {
         const attachments = [
             {
                 buffer: png1x1,
@@ -297,7 +332,7 @@ describe('File validator plugin', function () {
         assert.deepEqual(validated, { attachments })
     })
 
-    it('supports extensions as a dedicated rule', async function () {
+    it('supports extensions as a dedicated rule', async () => {
         const validator = Validator.make(
             {
                 avatar: {
@@ -312,7 +347,7 @@ describe('File validator plugin', function () {
         assert.equal(await validator.passes(), true)
     })
 
-    it('fails dimensions when the configured constraints are not met', async function () {
+    it('fails dimensions when the configured constraints are not met', async () => {
         const validator = Validator.make(
             {
                 avatar: {
@@ -335,7 +370,7 @@ describe('File validator plugin', function () {
         )
     })
 
-    it('supports dimensions max_width and max_height constraints', async function () {
+    it('supports dimensions max_width and max_height constraints', async () => {
         const validator = Validator.make(
             {
                 avatar: {
@@ -362,7 +397,7 @@ describe('File validator plugin', function () {
 describe('File upload adapters', function () {
     Validator.use(fileValidatorPlugin)
 
-    it('attaches Express uploads to validator context using a real app request', async function () {
+    it('attaches Express uploads to validator context using a real app request', async () => {
         const app = express()
         const upload = multer({ storage: multer.memoryStorage() })
 
@@ -399,7 +434,7 @@ describe('File upload adapters', function () {
         }
     })
 
-    it('attaches Fastify multipart uploads to validator context using a real app request', async function () {
+    it('attaches Fastify multipart uploads to validator context using a real app request', async () => {
         const app = Fastify()
         await app.register(multipart)
 
@@ -439,7 +474,7 @@ describe('File upload adapters', function () {
         }
     })
 
-    it('attaches Hono parsed body uploads to validator context using a real app request', async function () {
+    it('attaches Hono parsed body uploads to validator context using a real app request', async () => {
         const app = new Hono()
 
         app.post('/with-context', async function (context) {
@@ -469,7 +504,7 @@ describe('File upload adapters', function () {
         })
     })
 
-    it('attaches h3 form-data uploads to validator context using a real app request', async function () {
+    it('attaches h3 form-data uploads to validator context using a real app request', async () => {
         const app = new H3().post('/with-context', async function (event) {
             const validator = await withH3UploadContext(
                 Validator.make({}, { avatar: 'file|image|mimetypes:image/png' }),
@@ -497,7 +532,7 @@ describe('File upload adapters', function () {
         })
     })
 
-    it('supports static Validator.useContext for middleware-populated uploads', async function () {
+    it('supports static Validator.useContext for middleware-populated uploads', async () => {
         Validator.useContext({
             requestFiles: {
                 avatar: {
@@ -514,7 +549,7 @@ describe('File upload adapters', function () {
         assert.equal(await validator.passes(), true)
     })
 
-    it('supports Express middleware-style upload context with real middleware', async function () {
+    it('supports Express middleware-style upload context with real middleware', async () => {
         const app = express()
         const upload = multer({ storage: multer.memoryStorage() })
 
@@ -552,7 +587,7 @@ describe('File upload adapters', function () {
         }
     })
 
-    it('supports Fastify middleware-style upload context with a real hook', async function () {
+    it('supports Fastify middleware-style upload context with a real hook', async () => {
         const app = Fastify()
         await app.register(multipart)
 
@@ -562,7 +597,7 @@ describe('File upload adapters', function () {
             }
         })
 
-        app.post('/middleware-context', async function () {
+        app.post('/middleware-context', async () => {
             const validator = Validator.make({}, { attachments: 'files|mimes:png' })
 
             return {
@@ -588,7 +623,7 @@ describe('File upload adapters', function () {
         }
     })
 
-    it('supports Hono middleware-style upload context with real middleware', async function () {
+    it('supports Hono middleware-style upload context with real middleware', async () => {
         const app = new Hono()
 
         app.use('/middleware-context', async function (context, next) {
@@ -616,7 +651,7 @@ describe('File upload adapters', function () {
         assert.deepEqual(await response.json(), { passes: true })
     })
 
-    it('supports h3 middleware-style upload context with real middleware', async function () {
+    it('supports h3 middleware-style upload context with real middleware', async () => {
         const app = new H3()
 
         app.use('/middleware-context', async function (event, next) {
@@ -624,7 +659,7 @@ describe('File upload adapters', function () {
             return next()
         })
 
-        app.post('/middleware-context', async function () {
+        app.post('/middleware-context', async () => {
             const validator = Validator.make({}, { avatar: 'file|image|mimetypes:image/png' })
 
             return {
@@ -644,7 +679,7 @@ describe('File upload adapters', function () {
         assert.deepEqual(await response.json(), { passes: true })
     })
 
-    it('supports wildcard multi-file validation helpers', async function () {
+    it('supports wildcard multi-file validation helpers', async () => {
         useExpressUploadContext({
             files: [
                 {
