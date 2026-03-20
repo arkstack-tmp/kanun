@@ -1031,6 +1031,10 @@ class validateAttributes {
 
     /**
      * Prepare the values for validation
+     *
+     * @param other         The value to compare against
+     * @param parameters    The parameters for the validation rule
+     * @returns             The prepared values for validation
      */
     parseDependentRuleParameters (other: any, parameters: string[]): any[] {
         let values: any[] = parameters.slice(1)
@@ -1052,12 +1056,13 @@ class validateAttributes {
 
     private getAttributeValue (attribute: string): any {
         const dataValue = deepFind(this.data, attribute)
+        const fileValue = deepFind(this.context.requestFiles ?? {}, attribute)
 
-        if (typeof dataValue !== 'undefined') {
-            return dataValue
+        if (typeof fileValue !== 'undefined' && (typeof dataValue === 'undefined' || dataValue === null || dataValue === '')) {
+            return fileValue
         }
 
-        return deepFind(this.context.requestFiles ?? {}, attribute)
+        return dataValue
     }
 
     private getDistinctValues (primaryAttribute: string): any[] {
@@ -1126,9 +1131,21 @@ class validateAttributes {
         const asciiDomain = domainToASCII(domain)
 
         return asciiDomain.length > 0
-            && !/[\u0000-\u001F\u007F]/.test(value)
+            && !this.hasAsciiControlCharacters(value)
             && localPart.normalize('NFKC') === localPart
             && domain.normalize('NFKC') === domain
+    }
+
+    private hasAsciiControlCharacters (value: string): boolean {
+        for (let index = 0; index < value.length; index++) {
+            const codePoint = value.charCodeAt(index)
+
+            if (codePoint <= 0x1f || codePoint === 0x7f) {
+                return true
+            }
+        }
+
+        return false
     }
 
     private getDecimalPlaces (value: any): number {

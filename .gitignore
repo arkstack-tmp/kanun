@@ -154,3 +154,4 @@ docs/.vitepress/cache
 /src/dev
 apis.generated.ts
 apis.generated.js
+test.cjs
