@@ -150,6 +150,16 @@ describe('Validator', () => {
             const v = new Validator({ nickname: 'A' }, { nickname: 'nullable|min:2' })
             await expect(v.validate()).rejects.toThrowError(ValidationException)
         })
+
+        it('excludes fields from validated output', async () => {
+            const v = new Validator(
+                { email: 'valid@example.com', token: 'secret-value' },
+                { email: 'required|email', token: 'exclude|string' },
+            )
+
+            await expect(v.validate()).resolves.toEqual({ email: 'valid@example.com' })
+            expect(v.validated()).toEqual({ email: 'valid@example.com' })
+        })
     })
 
     describe('error structure and message', () => {

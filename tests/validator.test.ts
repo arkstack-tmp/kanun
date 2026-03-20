@@ -427,6 +427,131 @@ describe('Json', function () {
   })
 })
 
+describe('Additional Rules', function () {
+  describe('Filled', function () {
+    it('Validation should succeed when the field is missing', function () {
+      validator.setData({}).setRules({ value: 'filled' })
+      assert.ok(validator.validate())
+    })
+
+    it('Validation should fail when the field is present but empty', function () {
+      validator.setData({ value: '' }).setRules({ value: 'filled' })
+      assert.equal(validator.validate(), false)
+      assert.equal(validator.errors().first(), 'The value field must have a value.')
+    })
+  })
+
+  describe('Prohibited Rules', function () {
+    it('Validation should fail when a prohibited field is present', function () {
+      validator.setData({ value: 'secret' }).setRules({ value: 'prohibited' })
+      assert.equal(validator.validate(), false)
+      assert.equal(validator.errors().first(), 'The value field is prohibited.')
+    })
+
+    it('Validation should succeed when a prohibited field is missing', function () {
+      validator.setData({}).setRules({ value: 'prohibited' })
+      assert.ok(validator.validate())
+    })
+
+    it('Validation should fail prohibited_unless when the condition does not match', function () {
+      validator.setData({ role: 'user', token: 'present' }).setRules({ token: 'prohibited_unless:role,admin' })
+      assert.equal(validator.validate(), false)
+      assert.equal(validator.errors().first(), 'The token field is prohibited unless role is in admin.')
+    })
+
+    it('Validation should succeed prohibited_unless when the condition matches', function () {
+      validator.setData({ role: 'admin', token: 'present' }).setRules({ token: 'prohibited_unless:role,admin' })
+      assert.ok(validator.validate())
+    })
+
+    it('Validation should fail prohibits when dependent attributes are present', function () {
+      validator.setData({ coupon: 'SAVE', discount: 'yes' }).setRules({ coupon: 'prohibits:discount' })
+      assert.equal(validator.validate(), false)
+      assert.equal(validator.errors().first(), 'The coupon field prohibits discount from being present.')
+    })
+  })
+
+  describe('Network and format rules', function () {
+    it('Validation should validate IP variants and MAC addresses', function () {
+      validator.setData({
+        ip: '127.0.0.1',
+        ipv4: '192.168.1.10',
+        ipv6: '2001:db8::1',
+        mac: 'aa:bb:cc:dd:ee:ff',
+      }).setRules({
+        ip: 'ip',
+        ipv4: 'ipv4',
+        ipv6: 'ipv6',
+        mac: 'mac_address',
+      })
+
+      assert.ok(validator.validate())
+    })
+
+    it('Validation should fail invalid timezone values', function () {
+      validator.setData({ zone: 'Mars/Olympus' }).setRules({ zone: 'timezone' })
+      assert.equal(validator.validate(), false)
+      assert.equal(validator.errors().first(), 'The zone must be a valid timezone.')
+    })
+
+    it('Validation should succeed for a valid timezone value', function () {
+      validator.setData({ zone: 'UTC' }).setRules({ zone: 'timezone' })
+      assert.ok(validator.validate())
+    })
+  })
+
+  describe('Multiple Of', function () {
+    it('Validation should fail when the value is not a multiple of the parameter', function () {
+      validator.setData({ value: 10 }).setRules({ value: 'multiple_of:3' })
+      assert.equal(validator.validate(), false)
+      assert.equal(validator.errors().first(), 'The value must be a multiple of 3.')
+    })
+
+    it('Validation should support decimal multiples', function () {
+      validator.setData({ value: 0.3 }).setRules({ value: 'multiple_of:0.1' })
+      assert.ok(validator.validate())
+    })
+  })
+
+  describe('Distinct', function () {
+    it('Validation should fail on duplicate wildcard values', function () {
+      validator.setData({ users: [{ email: 'same@example.com' }, { email: 'same@example.com' }] })
+        .setRules({ 'users.*.email': 'distinct' })
+      assert.equal(validator.validate(), false)
+      assert.equal(validator.errors().first(), 'The email field has a duplicate value.')
+    })
+
+    it('Validation should respect ignore_case and strict options', function () {
+      validator.setData({ users: [{ email: 'Name@example.com' }, { email: 'name@example.com' }] })
+        .setRules({ 'users.*.email': 'distinct:ignore_case' })
+      assert.equal(validator.validate(), false)
+
+      validator.setData({ values: [1, '1'] }).setRules({ 'values.*': 'distinct:strict' })
+      assert.ok(validator.validate())
+    })
+  })
+
+  describe('Email options', function () {
+    it('Validation should support comma-separated email options', function () {
+      validator.setData({ value: 'john..doe@example.com' }).setRules({ value: 'email:strict' })
+      assert.equal(validator.validate(), false)
+
+      validator.setData({ value: 'john.doe@example.com' }).setRules({ value: 'email:rfc,strict,dns,spoof,filter' })
+      assert.ok(validator.validate())
+    })
+  })
+
+  describe('PresentSame', function () {
+    it('Validation should behave like present', function () {
+      validator.setData({}).setRules({ value: 'presentsame' })
+      assert.equal(validator.validate(), false)
+
+      validator.setData({ value: '' }).setRules({ value: 'presentsame' })
+      assert.ok(validator.validate())
+    })
+  })
+})
+
 describe('Numeric', function () {
   describe('The field under validation must be numeric', function () {
     it('Validation should fail in case value is not numeric', function () {

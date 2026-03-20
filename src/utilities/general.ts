@@ -7,7 +7,7 @@ import { getValidationSize } from '../Plugin'
 
 const implicitRues: string[] = [
     'accepted', 'accepted_if', 'declined', 'declined_if',
-    'filled', 'present', 'required', 'required_if', 'required_unless',
+    'filled', 'present', 'presentsame', 'required', 'required_if', 'required_unless',
     'required_with', 'required_with_all', 'required_without', 'required_without_all'
 ]
 

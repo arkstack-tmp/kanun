@@ -250,6 +250,20 @@ const replaceAttributes: ReplaceAttributeInterface = {
     },
 
     /**
+     * Replace all place-holders for the prohibited_unless rule.
+     */
+    replaceProhibitedUnless: function (payload: replaceAttributePayload): string {
+        return this.replaceRequiredUnless(payload)
+    },
+
+    /**
+     * Replace all place-holders for the prohibits rule.
+     */
+    replaceProhibits: function ({ message, parameters, getDisplayableAttribute }: replaceAttributePayload): string {
+        return message.replace(':values', parameters.map(attribute => getDisplayableAttribute(attribute)).join(', '))
+    },
+
+    /**
      * Replace all the place-holders for the required_unless rule.
      */
     replaceRequiredUnless: function ({ message, parameters, getDisplayableAttribute }: replaceAttributePayload): string {
@@ -275,6 +289,13 @@ const replaceAttributes: ReplaceAttributeInterface = {
      */
     replaceSize: function ({ message, parameters }: replaceAttributePayload): string {
         return message.replace(':size', parameters[0])
+    },
+
+    /**
+     * Replace all place-holders for the multiple_of rule.
+     */
+    replaceMultipleOf: function ({ message, parameters }: replaceAttributePayload): string {
+        return message.replace(':value', parameters[0])
     },
 
     /**

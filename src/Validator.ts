@@ -196,9 +196,14 @@ export class Validator<
      */
     public validatedData (): ValidatedByRules<D, R> {
         const validKeys = Object.keys(this.rules)
+        const excluded = new Set(this.instance?.getExcludedAttributes() ?? [])
         const clean: Record<string, any> = {}
 
         for (const key of validKeys) {
+            if (excluded.has(key)) {
+                continue
+            }
+
             const value = deepFind(this.data, key)
             const resolvedValue = typeof value !== 'undefined'
                 ? value
@@ -217,8 +222,10 @@ export class Validator<
      * Return all validated input.
      */
     validated (): Partial<D> {
+        const excluded = new Set(this.instance?.getExcludedAttributes() ?? [])
+
         return Object.fromEntries(
-            Object.entries(this.data).filter(([key]) => key in this.rules)
+            Object.entries(this.data).filter(([key]) => key in this.rules && !excluded.has(key))
         ) as Partial<D>
     }
 

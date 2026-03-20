@@ -223,10 +223,13 @@ export interface ReplaceAttributeInterface {
     replaceGte: (payload: replaceAttributePayload) => string;
     replaceLte: (payload: replaceAttributePayload) => string;
     replaceRequiredIf: (payload: replaceAttributePayload) => string;
+    replaceProhibitedUnless: (payload: replaceAttributePayload) => string;
+    replaceProhibits: (payload: replaceAttributePayload) => string;
     replaceStartsWith: (payload: replaceAttributePayload) => string;
     replaceRequiredUnless: (payload: replaceAttributePayload) => string;
     replaceSame: (payload: replaceAttributePayload) => string;
     replaceSize: (payload: replaceAttributePayload) => string;
+    replaceMultipleOf: (payload: replaceAttributePayload) => string;
     replaceUnique: (payload: replaceAttributePayload) => string;
 };
 

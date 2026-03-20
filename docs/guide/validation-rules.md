@@ -49,11 +49,18 @@ Use this index to jump directly to each rule description.
 - [alpha_dash](#alpha_dash)
 - [alpha_num](#alpha_num)
 - [email](#email)
+- [email:rfc,dns,strict,spoof,filter](#email_options)
 - [ends_with:value,...](#ends_with)
+- [filled](#filled)
+- [ip](#ip)
+- [ipv4](#ipv4)
+- [ipv6](#ipv6)
+- [mac_address](#mac_address)
 - [not_regex:pattern](#not_regex)
 - [regex:pattern](#regex)
 - [starts_with:value,...](#starts_with)
 - [string](#string)
+- [timezone](#timezone)
 - [url](#url)
 
 #### Numbers and Size
@@ -68,6 +75,7 @@ Use this index to jump directly to each rule description.
 - [lte:field](#lte)
 - [max:value](#max)
 - [min:value](#min)
+- [multiple_of:value](#multiple_of)
 - [numeric](#numeric)
 - [size:value](#size)
 
@@ -75,6 +83,9 @@ Use this index to jump directly to each rule description.
 
 - [array](#array)
 - [array_unique](#array_unique)
+- [distinct](#distinct)
+- [distinct:strict](#distinct)
+- [distinct:ignore_case](#distinct)
 - [in:value,...](#in)
 - [json](#json)
 - [not_in:value,...](#not_in)
@@ -99,8 +110,13 @@ Use this index to jump directly to each rule description.
 - [bail](#bail)
 - [confirmed](#confirmed)
 - [different:field](#different)
+- [exclude](#exclude)
 - [nullable](#nullable)
 - [present](#present)
+- [presentsame](#presentsame)
+- [prohibited](#prohibited)
+- [prohibited_unless:field,value,...](#prohibited_unless)
+- [prohibits:field,...](#prohibits)
 - [required](#required)
 - [required_if:field,value,...](#required_if)
 - [required_unless:field,value,...](#required_unless)
@@ -230,11 +246,37 @@ The field must be numeric and contain between `min` and `max` digits.
 
 The field must be a valid email address.
 
+<a id="email_options"></a>
+
+### email:rfc,dns,strict,spoof,filter
+
+The `email` rule also accepts comma-separated options:
+
+```ts
+const rules = {
+  email: 'email:rfc,strict,dns,spoof,filter',
+};
+```
+
+Supported options:
+
+- `rfc`: enables the standard email format check
+- `filter`: enables the default lightweight filter-style email validation
+- `strict`: rejects malformed local parts and invalid hostname labels
+- `dns`: requires a domain that passes strict hostname validation and IDNA normalization
+- `spoof`: adds normalization and control-character safety checks
+
+You can use a single option or combine several.
+
 <a id="ends_with"></a>
 
 ### ends_with:value,...
 
 The field must end with one of the provided values.
+
+### filled
+
+If the field is present, it must not be empty. Missing fields still pass.
 
 <a id="exists"></a>
 
@@ -264,9 +306,25 @@ The field must be one of the provided values.
 
 The field must be an integer.
 
+### ip
+
+The field must be a valid IPv4 or IPv6 address.
+
+### ipv4
+
+The field must be a valid IPv4 address.
+
+### ipv6
+
+The field must be a valid IPv6 address.
+
 ### json
 
 The field must be valid JSON.
+
+### mac_address
+
+The field must be a valid MAC address in colon-separated or hyphen-separated form.
 
 <a id="lt"></a>
 
@@ -292,6 +350,14 @@ The field must not be greater than the provided maximum size or value.
 
 The field must be at least the provided minimum size or value.
 
+<a id="multiple_of"></a>
+
+### multiple_of:value
+
+The numeric field must be an exact multiple of the provided value.
+
+This also supports decimals such as `multiple_of:0.1`.
+
 <a id="not_in"></a>
 
 ### not_in:value,...
@@ -316,15 +382,58 @@ The field must be numeric.
 
 The field must be a plain object.
 
+### distinct
+
+The field values must be unique.
+
+This is most useful with wildcard rules:
+
+```ts
+const rules = {
+  'users.*.email': 'distinct',
+};
+```
+
+Options:
+
+- `distinct:strict`: compare values using strict equality
+- `distinct:ignore_case`: compare strings case-insensitively
+
 ### present
 
 The field key must exist in the input data, even if empty.
+
+### presentsame
+
+Alias of `present`. The field key must exist in the input data, even if empty.
+
+### prohibited
+
+The field must be missing or empty.
+
+<a id="prohibited_unless"></a>
+
+### prohibited_unless:field,value,...
+
+The field must be missing or empty unless another field matches one of the provided values.
+
+<a id="prohibits"></a>
+
+### prohibits:field,...
+
+If the field is present and not empty, the listed fields must be missing or empty.
 
 <a id="regex"></a>
 
 ### regex:pattern
 
 The field must match the given regular expression.
+
+### exclude
+
+Exclude the field from validated output.
+
+This is useful when a field may be accepted as input but should not appear in the result returned by `validate()` or `validated()`.
 
 ### required
 
@@ -395,6 +504,10 @@ Enables strict type checks for supported rules (for example `numeric`, `integer`
 ### string
 
 The field must be a string.
+
+### timezone
+
+The field must be a valid IANA timezone identifier such as `UTC` or `Europe/Paris`.
 
 <a id="unique"></a>
 

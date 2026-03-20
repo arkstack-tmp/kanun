@@ -30,6 +30,8 @@ import validationRuleParser from './validators/validationRuleParser'
 import { isObject } from './utilities/helpers'
 
 export class BaseValidator<D extends GenericObject = GenericObject> {
+    private excludedAttributes = new Set<string>()
+
     /**
      * The lang used to return error messages
      */
@@ -204,6 +206,10 @@ export class BaseValidator<D extends GenericObject = GenericObject> {
         return this.messages
     };
 
+    getExcludedAttributes (): string[] {
+        return [...this.excludedAttributes]
+    }
+
     /**
      * Clear the error messages for the given keys. 
      * If no keys are provided, all error messages will be cleared.
@@ -363,6 +369,7 @@ export class BaseValidator<D extends GenericObject = GenericObject> {
     private runAllValidations (): void {
         this.messages = new ErrorBag()
         this.validateAttributes = new validateAttributes(this.data, this.rules, this.getContext())
+        this.excludedAttributes.clear()
 
         for (const property in this.rules) {
             if (this.runValidation(property) === false) {
@@ -377,6 +384,7 @@ export class BaseValidator<D extends GenericObject = GenericObject> {
     private async runAllValidationsAsync (): Promise<void> {
         this.messages = new ErrorBag()
         this.validateAttributes = new validateAttributes(this.data, this.rules, this.getContext())
+        this.excludedAttributes.clear()
 
         for (const property in this.rules) {
             if (await this.runValidationAsync(property) === false) {
@@ -416,6 +424,11 @@ export class BaseValidator<D extends GenericObject = GenericObject> {
      */
     private runValidation (property: string): boolean | void {
         if (Object.prototype.hasOwnProperty.call(this.rules, property) && Array.isArray(this.rules[property])) {
+            if (validationRuleParser.hasRule(property, ['exclude'], this.rules)) {
+                this.excludedAttributes.add(property)
+                return
+            }
+
             for (let i = 0; i < this.rules[property].length; i++) {
                 this.validateAttribute(property, this.rules[property][i])
 
@@ -435,6 +448,11 @@ export class BaseValidator<D extends GenericObject = GenericObject> {
      */
     private async runValidationAsync (property: string): Promise<boolean | void> {
         if (Object.prototype.hasOwnProperty.call(this.rules, property) && Array.isArray(this.rules[property])) {
+            if (validationRuleParser.hasRule(property, ['exclude'], this.rules)) {
+                this.excludedAttributes.add(property)
+                return
+            }
+
             for (let i = 0; i < this.rules[property].length; i++) {
                 await this.validateAttribute(property, this.rules[property][i])
 
@@ -453,6 +471,10 @@ export class BaseValidator<D extends GenericObject = GenericObject> {
      * Check if we should stop further validations on a given attribute.
      */
     private shouldStopValidating (attribute: string): boolean {
+        if (this.excludedAttributes.has(attribute)) {
+            return true
+        }
+
         return this.messages.has(attribute) && validationRuleParser.hasRule(attribute, ['bail'], this.rules)
     };
 
@@ -505,7 +527,12 @@ export class BaseValidator<D extends GenericObject = GenericObject> {
             return
         }
 
-        const validation = this.validateAttributes[method](value, parameters, attribute) as boolean | Promise<boolean>
+        const validation = this.validateAttributes[method](
+            value,
+            parameters,
+            attribute,
+            this.getPrimaryAttribute(attribute),
+        ) as boolean | Promise<boolean>
 
         if (validation instanceof Promise) {
             return validation.then(result => {

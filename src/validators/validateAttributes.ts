@@ -5,8 +5,11 @@ import { deepEqual, deepFind } from '../utilities/object'
 
 import { GenericObject } from 'src/Contracts/IGeneric'
 import { Rules } from '../Contracts/BaseContract'
+import { domainToASCII } from 'node:url'
+import { isIP } from 'node:net'
 import { isObject } from 'src/utilities/helpers'
 import { toDate } from '../utilities/date'
+import validationData from './validationData'
 import validationRuleParser from './validationRuleParser'
 
 class validateAttributes {
@@ -242,7 +245,7 @@ class validateAttributes {
     validateDeclinedIf (value: any, parameters: string[]): boolean {
         this.requireParameterCount(2, parameters, 'declined_if')
 
-        const other = deepFind(this.data, parameters[0])
+        const other = this.getAttributeValue(parameters[0])
 
         if (!other) {
             return true
@@ -263,7 +266,7 @@ class validateAttributes {
     validateDifferent (value: any, parameters: string[]): boolean {
         this.requireParameterCount(1, parameters, 'different')
 
-        const other = deepFind(this.data, parameters[0])
+        const other = this.getAttributeValue(parameters[0])
 
         if (!sameType(value, other)) {
             return true
@@ -337,16 +340,43 @@ class validateAttributes {
     /**
      * Validate that an attribute is a valid email address.
      */
-    validateEmail (value: any): boolean {
+    validateEmail (value: any, parameters: string[] = []): boolean {
         if (typeof value !== 'string') {
             return false
         }
 
-        /**
-         * Max allowed length for a top-level-domain is 24 characters.
-         * reference to list of top-level-domains: https://data.iana.org/TLD/tlds-alpha-by-domain.txt
-         */
-        return value.toLowerCase().match(/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,24})+$/) !== null
+        const normalized = parameters.map(parameter => parameter.replace(/[{}]/g, '').toLowerCase())
+
+        if (normalized.length === 0 || normalized.includes('filter') || normalized.includes('rfc')) {
+            if (!this.isEmailByFilter(value)) {
+                return false
+            }
+        }
+
+        if (normalized.includes('strict') && !this.isStrictEmail(value)) {
+            return false
+        }
+
+        if (normalized.includes('dns') && !this.hasResolvableEmailDomain(value)) {
+            return false
+        }
+
+        if (normalized.includes('spoof') && !this.isSpoofSafeEmail(value)) {
+            return false
+        }
+
+        return true
+    };
+
+    /**
+     * Validate that a present attribute is not empty.
+     */
+    validateFilled (value: any): boolean {
+        if (typeof value === 'undefined') {
+            return true
+        }
+
+        return this.validateRequired(value)
     };
 
     /**
@@ -448,7 +478,7 @@ class validateAttributes {
      */
     validateRequiredIf (value: any, parameters: string[]): boolean {
         this.requireParameterCount(2, parameters, 'required_if')
-        const other = deepFind(this.data, parameters[0])
+        const other = this.getAttributeValue(parameters[0])
 
         if (typeof other === 'undefined') {
             return true
@@ -469,7 +499,7 @@ class validateAttributes {
     validateRequiredUnless (value: any, parameters: string[]): boolean {
         this.requireParameterCount(2, parameters, 'required_unless')
 
-        let other = deepFind(this.data, parameters[0])
+        let other = this.getAttributeValue(parameters[0])
         other = typeof other === 'undefined' ? null : other
 
         const values = this.parseDependentRuleParameters(other, parameters)
@@ -530,7 +560,7 @@ class validateAttributes {
      */
     anyFailingRequired (attributes: string[]): boolean {
         for (let i = 0; i < attributes.length; i++) {
-            if (!this.validateRequired(deepFind(this.data, attributes[i]))) {
+            if (!this.validateRequired(this.getAttributeValue(attributes[i]))) {
                 return true
             }
         }
@@ -543,7 +573,7 @@ class validateAttributes {
      */
     allFailingRequired (attributes: string[]): boolean {
         for (let i = 0; i < attributes.length; i++) {
-            if (this.validateRequired(deepFind(this.data, attributes[i]))) {
+            if (this.validateRequired(this.getAttributeValue(attributes[i]))) {
                 return false
             }
         }
@@ -611,7 +641,14 @@ class validateAttributes {
      * Validate that an attribute exists even if not filled.
      */
     validatePresent (value: any, parameters: string[], attribute: string): boolean {
-        return typeof deepFind(this.data, attribute) !== 'undefined'
+        return typeof this.getAttributeValue(attribute) !== 'undefined'
+    };
+
+    /**
+     * Alias of the present rule kept for compatibility with requested rule naming.
+     */
+    validatePresentsame (value: any, parameters: string[], attribute: string): boolean {
+        return this.validatePresent(value, parameters, attribute)
     };
 
     /**
@@ -644,6 +681,146 @@ class validateAttributes {
         return true
     };
 
+    /**
+     * Validate that an attribute is prohibited.
+     */
+    validateProhibited (value: any): boolean {
+        return !this.validateRequired(value)
+    };
+
+    /**
+     * Validate that an attribute is prohibited unless another field matches one of the given values.
+     */
+    validateProhibitedUnless (value: any, parameters: string[]): boolean {
+        this.requireParameterCount(2, parameters, 'prohibited_unless')
+
+        let other = this.getAttributeValue(parameters[0])
+        other = typeof other === 'undefined' ? null : other
+
+        const values = this.parseDependentRuleParameters(other, parameters)
+
+        if (values.indexOf(other) !== -1) {
+            return true
+        }
+
+        return this.validateProhibited(value)
+    };
+
+    /**
+     * Validate that present attributes prohibit other attributes from being present.
+     */
+    validateProhibits (value: any, parameters: string[]): boolean {
+        this.requireParameterCount(1, parameters, 'prohibits')
+
+        if (!this.validateRequired(value)) {
+            return true
+        }
+
+        return parameters.every(attribute => this.validateProhibited(this.getAttributeValue(attribute)))
+    };
+
+    /**
+     * Validate that an attribute is a valid IP address.
+     */
+    validateIp (value: any): boolean {
+        return typeof value === 'string' && isIP(value) !== 0
+    };
+
+    /**
+     * Validate that an attribute is a valid IPv4 address.
+     */
+    validateIpv4 (value: any): boolean {
+        return typeof value === 'string' && isIP(value) === 4
+    };
+
+    /**
+     * Validate that an attribute is a valid IPv6 address.
+     */
+    validateIpv6 (value: any): boolean {
+        return typeof value === 'string' && isIP(value) === 6
+    };
+
+    /**
+     * Validate that an attribute is a valid MAC address.
+     */
+    validateMacAddress (value: any): boolean {
+        return typeof value === 'string'
+            && /^([0-9a-f]{2}[:-]){5}[0-9a-f]{2}$/i.test(value)
+    };
+
+    /**
+     * Validate that an attribute is a valid timezone identifier.
+     */
+    validateTimezone (value: any): boolean {
+        if (typeof value !== 'string' || value.length === 0) {
+            return false
+        }
+
+        if (typeof Intl.supportedValuesOf === 'function' && Intl.supportedValuesOf('timeZone').includes(value)) {
+            return true
+        }
+
+        try {
+            new Intl.DateTimeFormat('en-US', { timeZone: value })
+            return true
+        } catch {
+            return false
+        }
+    };
+
+    /**
+     * Validate that an attribute is a multiple of the given value.
+     */
+    validateMultipleOf (value: any, parameters: string[]): boolean {
+        this.requireParameterCount(1, parameters, 'multiple_of')
+
+        const numericValue = Number(value)
+        const divisor = Number(parameters[0])
+
+        if (!Number.isFinite(numericValue) || !Number.isFinite(divisor) || divisor === 0) {
+            return false
+        }
+
+        const scale = 10 ** Math.max(this.getDecimalPlaces(value), this.getDecimalPlaces(parameters[0]))
+        const scaledValue = Math.round(numericValue * scale)
+        const scaledDivisor = Math.round(divisor * scale)
+
+        return scaledDivisor !== 0 && scaledValue % scaledDivisor === 0
+    };
+
+    /**
+     * Validate that values matched by a wildcard attribute are distinct.
+     */
+    validateDistinct (value: any, parameters: string[], attribute: string, primaryAttribute: string = attribute): boolean {
+        if (Array.isArray(value)) {
+            return new Set(value.map(entry => this.normalizeDistinctValue(entry, parameters))).size === value.length
+        }
+
+        if (primaryAttribute.indexOf('*') === -1) {
+            return true
+        }
+
+        const strict = parameters.includes('strict')
+        const values = this.getDistinctValues(primaryAttribute)
+        const current = this.normalizeDistinctValue(value, parameters)
+        let matches = 0
+
+        for (const candidate of values) {
+            const normalized = this.normalizeDistinctValue(candidate, parameters)
+            const isMatch = strict ? normalized === current : normalized == current
+
+            if (isMatch) {
+                matches += 1
+            }
+
+            if (matches > 1) {
+                return false
+            }
+        }
+
+        return true
+    };
+
 
     /**
      * Validate that an attribute is greater than another attribute.
@@ -655,7 +832,7 @@ class validateAttributes {
             throw 'The field under validation must be a number, string, array or object'
         }
 
-        const compartedToValue = deepFind(this.data, parameters[0]) || parameters[0]
+        const compartedToValue = this.getAttributeValue(parameters[0]) || parameters[0]
 
         if (!Array.isArray(compartedToValue) && isNaN(compartedToValue) === false) {
             return getSize(value, validationRuleParser.hasRule(attribute, getNumericRules(), this.rules)) > compartedToValue
@@ -678,7 +855,7 @@ class validateAttributes {
             throw 'The field under validation must be a number, string, array or object'
         }
 
-        const compartedToValue = deepFind(this.data, parameters[0]) || parameters[0]
+        const compartedToValue = this.getAttributeValue(parameters[0]) || parameters[0]
 
         if (!Array.isArray(compartedToValue) && isNaN(compartedToValue) === false) {
             return getSize(value, validationRuleParser.hasRule(attribute, getNumericRules(), this.rules)) >= compartedToValue
@@ -701,7 +878,7 @@ class validateAttributes {
             throw 'The field under validation must be a number, string, array or object'
         }
 
-        const compartedToValue = deepFind(this.data, parameters[0]) || parameters[0]
+        const compartedToValue = this.getAttributeValue(parameters[0]) || parameters[0]
 
         if (!Array.isArray(compartedToValue) && isNaN(compartedToValue) === false) {
             return getSize(value, validationRuleParser.hasRule(attribute, getNumericRules(), this.rules)) < compartedToValue
@@ -724,7 +901,7 @@ class validateAttributes {
             throw 'The field under validation must be a number, string, array or object'
         }
 
-        const compartedToValue = deepFind(this.data, parameters[0]) || parameters[0]
+        const compartedToValue = this.getAttributeValue(parameters[0]) || parameters[0]
 
         if (!Array.isArray(compartedToValue) && isNaN(compartedToValue) === false) {
             return getSize(value, validationRuleParser.hasRule(attribute, getNumericRules(), this.rules)) <= compartedToValue
@@ -834,7 +1011,7 @@ class validateAttributes {
             throw `Validation rule ${rule} requires the field under valation to be a date.`
         }
 
-        const compartedToValue = toDate(deepFind(this.data, parameter) || parameter)
+        const compartedToValue = toDate(this.getAttributeValue(parameter) || parameter)
 
         if (!compartedToValue) {
             throw `Validation rule ${rule} requires the parameter to be a date.`
@@ -871,6 +1048,97 @@ class validateAttributes {
         }
 
         return values
+    }
+
+    private getAttributeValue (attribute: string): any {
+        const dataValue = deepFind(this.data, attribute)
+
+        if (typeof dataValue !== 'undefined') {
+            return dataValue
+        }
+
+        return deepFind(this.context.requestFiles ?? {}, attribute)
+    }
+
+    private getDistinctValues (primaryAttribute: string): any[] {
+        const gathered = validationData.initializeAndGatherData(primaryAttribute, this.data) as GenericObject
+        const pattern = new RegExp(`^${primaryAttribute.replace(/\./g, '\\.').replace(/\*/g, '[^.]+')}$`)
+
+        return Object.keys(gathered)
+            .filter(attribute => pattern.test(attribute))
+            .map(attribute => deepFind(this.data, attribute))
+            .filter(value => typeof value !== 'undefined')
+    }
+
+    private normalizeDistinctValue (value: any, parameters: string[]): any {
+        if (parameters.includes('ignore_case') && typeof value === 'string') {
+            return value.toLowerCase()
+        }
+
+        return value
+    }
+
+    private isEmailByFilter (value: string): boolean {
+        return value.toLowerCase().match(/^[^\s@]+@[^\s@]+\.[^\s@]{2,24}$/) !== null
+    }
+
+    private isStrictEmail (value: string): boolean {
+        if (!this.isEmailByFilter(value)) {
+            return false
+        }
+
+        const [localPart, domain] = value.split('@')
+
+        if (!localPart || !domain || localPart.length > 64 || domain.length > 255) {
+            return false
+        }
+
+        if (localPart.startsWith('.') || localPart.endsWith('.') || localPart.includes('..')) {
+            return false
+        }
+
+        return domain.split('.').every(label => {
+            return label.length > 0
+                && label.length <= 63
+                && /^[a-z0-9-]+$/i.test(label)
+                && !label.startsWith('-')
+                && !label.endsWith('-')
+        })
+    }
+
+    private hasResolvableEmailDomain (value: string): boolean {
+        if (!this.isStrictEmail(value)) {
+            return false
+        }
+
+        const domain = value.split('@')[1]
+        const asciiDomain = domainToASCII(domain)
+
+        return asciiDomain.length > 0 && asciiDomain.includes('.')
+    }
+
+    private isSpoofSafeEmail (value: string): boolean {
+        if (!this.isEmailByFilter(value)) {
+            return false
+        }
+
+        const [localPart, domain] = value.split('@')
+        const asciiDomain = domainToASCII(domain)
+
+        return asciiDomain.length > 0
+            && !/[\u0000-\u001F\u007F]/.test(value)
+            && localPart.normalize('NFKC') === localPart
+            && domain.normalize('NFKC') === domain
+    }
+
+    private getDecimalPlaces (value: any): number {
+        const stringValue = String(value).toLowerCase()
+
+        if (!stringValue.includes('.')) {
+            return 0
+        }
+
+        return stringValue.split('.')[1]?.length ?? 0
     }
 
 };
