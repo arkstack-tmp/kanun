@@ -50,7 +50,8 @@
     "prepublishOnly": "pnpm build && pnpm vitest --watch=false",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "publish:packages": "pnpm publish --filter './packages/*' --access public"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
