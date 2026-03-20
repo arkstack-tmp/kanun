@@ -3,6 +3,7 @@ import { assert, describe, it } from 'vitest'
 import { make } from 'src/Core'
 
 const validator = make()
+const dynamicRules = <TRules> (rules: TRules): never => rules as never
 
 describe('Nested Objects', function () {
 
@@ -30,7 +31,7 @@ describe('Nested Objects', function () {
                     secondary: 2
                 }
             }
-        }).setRules({
+        }).setRules(dynamicRules({
             name: 'required|string',
             address: 'required|string',
             bio: {
@@ -40,7 +41,7 @@ describe('Nested Objects', function () {
                     secondary: ['required', 'string']
                 }
             }
-        })
+        }))
 
         assert.equal(validator.validate(), false)
     })
@@ -105,14 +106,14 @@ describe('Nested objects with flattened rules', function () {
                     secondary: 2
                 }
             }
-        }).setRules({
+        }).setRules(dynamicRules({
             name: 'required|string',
             address: 'required|string',
             'bio.age': 'required|integer',
             'bio.education': 'required|object',
             'bio.education.primary': ['required', 'string'],
             'bio.education.secondary': ['required', 'string'],
-        })
+        }))
 
         assert.equal(validator.validate(), false)
     })

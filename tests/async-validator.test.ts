@@ -11,6 +11,7 @@ describe('Register asyncronous custom rule', function () {
         test: ['required', 'fetch_data', 'string'],
         any: ['string']
     }
+    const withBail = { ...rules, test: [...rules.test, 'bail'] } as typeof rules
     const validator = make().setRules(rules).setCustomMessages({ fetch_data: 'The fetched data is invalid' })
 
     it('Validation should succeed whith registered rule', async function () {
@@ -22,7 +23,7 @@ describe('Register asyncronous custom rule', function () {
         assert.equal(validator.errors().get('test').length, 2)
     })
     it('Field validation should stop when bail rule is specified', async function () {
-        assert.equal(await validator.setRules({ ...rules, test: [...rules.test, 'bail'] }).validateAsync(), false)
+        assert.equal(await validator.setRules(withBail).validateAsync(), false)
         assert.equal(validator.errors().first(), 'The fetched data is invalid')
         assert.equal(validator.errors().get('test').length, 1)
         assert.equal(validator.errors().keys().length, 2)
@@ -59,6 +60,7 @@ describe('Register asyncronous custom class rule', function () {
         test: ['required', new FetchData, 'string'],
         any: ['string']
     }
+    const withBail = { ...rules, test: [...rules.test, 'bail'] } as typeof rules
 
     const validator = make().setRules(rules)
 
@@ -71,7 +73,7 @@ describe('Register asyncronous custom class rule', function () {
         assert.equal(validator.errors().get('test').length, 2)
     })
     it('Field validation should stop when bail rule is specified', async function () {
-        assert.equal(await validator.setRules({ ...rules, test: [...rules.test, 'bail'] }).validateAsync(), false)
+        assert.equal(await validator.setRules(withBail).validateAsync(), false)
         assert.equal(validator.errors().first(), 'The fetched data is invalid')
         assert.equal(validator.errors().get('test').length, 1)
         assert.equal(validator.errors().keys().length, 2)
@@ -102,6 +104,7 @@ describe('Defining an asyncronous custom closure rule', function () {
         }, 'string'],
         any: ['string']
     }
+    const withBail = { ...rules, test: [...rules.test, 'bail'] } as typeof rules
 
     const validator = make().setRules(rules)
 
@@ -114,7 +117,7 @@ describe('Defining an asyncronous custom closure rule', function () {
         assert.equal(validator.errors().get('test').length, 2)
     })
     it('Field validation should stop when bail rule is specified', async function () {
-        assert.equal(await validator.setRules({ ...rules, test: [...rules.test, 'bail'] }).validateAsync(), false)
+        assert.equal(await validator.setRules(withBail).validateAsync(), false)
         assert.equal(validator.errors().first(), 'The fetched data is invalid')
         assert.equal(validator.errors().get('test').length, 1)
         assert.equal(validator.errors().keys().length, 2)

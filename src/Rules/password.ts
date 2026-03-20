@@ -109,9 +109,10 @@ class Password extends RuleContract {
      * Determine if the validation rule passes.
      */
     passes (value: any, attribute: string): boolean {
+        const passwordRules: InitialRule[] = ['string', `min:${this.minLength}`, ...this.customRules]
 
         const validator: Validator = new Validator(this.data, {
-            [attribute]: ['string', `min:${this.minLength}`, ... this.customRules]
+            [attribute]: passwordRules
         }, this.validator.customMessages, this.validator.customAttributes).setLang(this.lang)
 
         if (!validator.validate()) {

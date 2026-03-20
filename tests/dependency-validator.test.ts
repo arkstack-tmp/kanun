@@ -2,12 +2,13 @@ import { assert, describe, it } from 'vitest'
 import { make, requiredIf } from 'src/Core'
 
 const validator = make()
+const dynamicRules = <TRules> (rules: TRules): never => rules as never
 
 
 describe('Accepted If', function () {
     describe('The field under validation must be yes, on, 1 or true if another field under validation is equal to a specified value', function () {
         it('Validation should fail if the field is missing and the other field is equal to any of the specified values', function () {
-            validator.setData({ value: 'foo' }).setRules({ terms: 'accepted_if:value,foo,test' })
+            validator.setData({ value: 'foo' }).setRules(dynamicRules({ terms: 'accepted_if:value,foo,test' }))
             assert.equal(validator.validate(), false)
         })
         it('Validation should fail if the field is not accepted and the other field is equal to any of the specified values', function () {
@@ -80,7 +81,7 @@ describe('Confirmed', function () {
 describe('Declined If', function () {
     describe('The field under validation must be no, off, 0 or false if another field under validation is equal to a specified value', function () {
         it('Validation should fail if the field is missing and the other field is equal to any of the specified values', function () {
-            validator.setData({ value: 'foo' }).setRules({ terms: 'declined_if:value,foo,test' })
+            validator.setData({ value: 'foo' }).setRules(dynamicRules({ terms: 'declined_if:value,foo,test' }))
             assert.equal(validator.validate(), false)
         })
         it('Validation should fail if the field is not declined and the other fieled is equal to any of the specified values', function () {
@@ -163,7 +164,7 @@ describe('Different', function () {
 describe('Required With', function () {
     describe('The field under validation must be present and not empty only if any of the other specified fields are present and not empty.', function () {
         it('Validation should fail if the field is not present when of the other fields are present', function () {
-            validator.setData({ name: 'Jad' }).setRules({ last: 'required_with:name,age' })
+            validator.setData({ name: 'Jad' }).setRules(dynamicRules({ last: 'required_with:name,age' }))
             assert.equal(validator.validate(), false)
         })
         it('An error should be returned to the user in case of failure', function () {
@@ -183,7 +184,7 @@ describe('Required With', function () {
 describe('Required With All', function () {
     describe('The field under validation must be present and not empty only if all of the other specified fields are present and not empty.', function () {
         it('Validation should fail if the field is not present when all the other fields are present', function () {
-            validator.setData({ name: 'Jad', age: 28 }).setRules({ last: 'required_with_all:name,age' })
+            validator.setData({ name: 'Jad', age: 28 }).setRules(dynamicRules({ last: 'required_with_all:name,age' }))
             assert.equal(validator.validate(), false)
         })
         it('An error should be returned to the user in case of failure', function () {
@@ -203,7 +204,7 @@ describe('Required With All', function () {
 describe('Required Without', function () {
     describe('The field under validation must be present and not empty only when any of the other specified fields are empty or not present.', function () {
         it('Validation should fail if field is not present when any of the other specified fields is not present', function () {
-            validator.setData({ age: 28, last: 'khoury' }).setRules({ name: 'required_without:middle,last' })
+            validator.setData({ age: 28, last: 'khoury' }).setRules(dynamicRules({ name: 'required_without:middle,last' }))
             assert.equal(validator.validate(), false)
         })
         it('An error should be returned to the user in case of failure', function () {
@@ -223,7 +224,7 @@ describe('Required Without', function () {
 describe('Required Without All', function () {
     describe('The field under validation must be present and not empty only when all of the other specified fields are empty or not present.', function () {
         it('Validation should fail if the field is not present when all the other specified fields are not present', function () {
-            validator.setData({ age: 28 }).setRules({ name: 'required_without_all:middle,last' })
+            validator.setData({ age: 28 }).setRules(dynamicRules({ name: 'required_without_all:middle,last' }))
             assert.equal(validator.validate(), false)
         })
         it('An error should be returned to the user in case of failure', function () {
@@ -287,57 +288,57 @@ describe('Same', function () {
 describe('Required If', function () {
     describe('The field under validation must be present and not empty only when the other field matches any of the specified values', function () {
         it('Validation should fail when the field is not present while the other field matches any of the specified values', function () {
-            validator.setData({ first: 'john' }).setRules({ last: 'required_if:first,jad,john' })
+            validator.setData({ first: 'john' }).setRules(dynamicRules({ last: 'required_if:first,jad,john' }))
             assert.equal(validator.validate(), false)
 
             validator.setData({ first: 'john', last: '' })
             assert.equal(validator.validate(), false)
 
-            validator.setData({ first: 'true' }).setRules({ last: 'required_if:first,true' })
+            validator.setData({ first: 'true' }).setRules(dynamicRules({ last: 'required_if:first,true' }))
             assert.equal(validator.validate(), false)
 
-            validator.setData({ first: 'false' }).setRules({ last: 'required_if:first,false' })
+            validator.setData({ first: 'false' }).setRules(dynamicRules({ last: 'required_if:first,false' }))
             assert.equal(validator.validate(), false)
 
-            validator.setData({ first: 'null' }).setRules({ last: 'required_if:first,null' })
+            validator.setData({ first: 'null' }).setRules(dynamicRules({ last: 'required_if:first,null' }))
             assert.equal(validator.validate(), false)
 
-            validator.setData({ first: '0' }).setRules({ last: 'required_if:first,0,2' })
+            validator.setData({ first: '0' }).setRules(dynamicRules({ last: 'required_if:first,0,2' }))
             assert.equal(validator.validate(), false)
 
-            validator.setData({ first: '1' }).setRules({ last: 'required_if:first,1,2' })
+            validator.setData({ first: '1' }).setRules(dynamicRules({ last: 'required_if:first,1,2' }))
             assert.equal(validator.validate(), false)
         })
         it('Validation should fail when the field is not present while the other field matches any of the specified numeric values', function () {
-            validator.setData({ first: 0 }).setRules({ last: 'required_if:first,0,2' })
+            validator.setData({ first: 0 }).setRules(dynamicRules({ last: 'required_if:first,0,2' }))
             assert.equal(validator.validate(), false)
 
-            validator.setData({ first: 1 }).setRules({ last: 'required_if:first,1,2' })
+            validator.setData({ first: 1 }).setRules(dynamicRules({ last: 'required_if:first,1,2' }))
             assert.equal(validator.validate(), false)
         })
         it('Validation should fail when the field is not present while the other field matches any of the specified boolean values', function () {
-            validator.setData({ first: true }).setRules({ last: 'required_if:first,true' })
+            validator.setData({ first: true }).setRules(dynamicRules({ last: 'required_if:first,true' }))
             assert.equal(validator.validate(), false)
 
-            validator.setData({ first: false }).setRules({ last: 'required_if:first,false' })
+            validator.setData({ first: false }).setRules(dynamicRules({ last: 'required_if:first,false' }))
             assert.equal(validator.validate(), false)
 
         })
         it('Validation should fail when the field is not present while the other field matches any of the specified null values', function () {
-            validator.setData({ first: null }).setRules({ last: 'required_if:first,null' })
+            validator.setData({ first: null }).setRules(dynamicRules({ last: 'required_if:first,null' }))
             assert.equal(validator.validate(), false)
 
-            validator.setData({ first: null }).setRules({ last: 'required_if:first,Null' })
+            validator.setData({ first: null }).setRules(dynamicRules({ last: 'required_if:first,Null' }))
             assert.equal(validator.validate(), false)
 
-            validator.setData({ first: null }).setRules({ last: 'required_if:first,NULL' })
+            validator.setData({ first: null }).setRules(dynamicRules({ last: 'required_if:first,NULL' }))
             assert.equal(validator.validate(), false)
         })
         it('An error should be returned to the user in case of failure', function () {
             assert.equal(validator.errors().first(), 'The last field is required when first is null.')
         })
         it('Validation should succeed when the field is not present and the other field does match any of the specified values', function () {
-            validator.setData({ first: 'test' }).setRules({ last: 'required_if:first,john' })
+            validator.setData({ first: 'test' }).setRules(dynamicRules({ last: 'required_if:first,john' }))
             assert.ok(validator.validate())
         })
         it('Validation should succeed when the field is present and not empty', function () {
@@ -354,29 +355,29 @@ describe('Required If', function () {
 describe('Required If Method', function () {
     describe('The field under validation must be present and not empty only when a condition is met', function () {
         it('Validation should fail when the field is not present while the requiredIf condition is met', function () {
-            validator.setData({}).setRules({ name: requiredIf(true) })
+            validator.setData({}).setRules(dynamicRules({ name: requiredIf(true) }))
             assert.equal(validator.validate(), false)
 
             validator.setData({ name: '' })
             assert.equal(validator.validate(), false)
         })
         it('Validation should fail when the field is not present while the function passed to the requiredIf returns true', function () {
-            validator.setRules({ name: requiredIf(() => true) })
+            validator.setRules(dynamicRules({ name: requiredIf(() => true) }))
             assert.equal(validator.validate(), false)
         })
         it('An error should be returned to the user in case of failure', function () {
             assert.equal(validator.errors().first(), 'The name field is required.')
         })
         it('Validation should succeed when the field is not present and the requiredId condition is not met', function () {
-            validator.setRules({ name: requiredIf(false) })
+            validator.setRules(dynamicRules({ name: requiredIf(false) }))
             assert.ok(validator.validate())
         })
         it('Validation should succeed when the field is not present and the function passed to the requiredIf returns false', function () {
-            validator.setRules({ name: requiredIf(() => false) })
+            validator.setRules(dynamicRules({ name: requiredIf(() => false) }))
             assert.ok(validator.validate())
         })
         it('Validation should succeed when the field is present', function () {
-            validator.setData({ name: 'jad' }).setRules({ name: requiredIf(true) })
+            validator.setData({ name: 'jad' }).setRules(dynamicRules({ name: requiredIf(true) }))
             assert.ok(validator.validate())
         })
     })
@@ -385,7 +386,7 @@ describe('Required If Method', function () {
 describe('Required Unless', function () {
     describe('The field under validation must be present and not empty unless the other field matches any of the specified values', function () {
         it('Validation should fail if the field under validation is not present while the other field does not match any of the specified values', function () {
-            validator.setData({ first: 'john' }).setRules({ last: 'required_unless:first,test,jad' })
+            validator.setData({ first: 'john' }).setRules(dynamicRules({ last: 'required_unless:first,test,jad' }))
             assert.equal(validator.validate(), false)
         })
         it('Validation should fail if the field under validation is present but empty while the other field does not match any of specified values', function () {
@@ -400,39 +401,39 @@ describe('Required Unless', function () {
             assert.equal(validator.errors().first(), 'The last field is required unless first is in test, jad.')
         })
         it('Validation should succeed if the field under validation is present and not empty while the other field does not match any of the specified values', function () {
-            validator.setData({ first: 'john', last: 'doe' }).setRules({ last: 'required_unless:first,test,jad' })
+            validator.setData({ first: 'john', last: 'doe' }).setRules(dynamicRules({ last: 'required_unless:first,test,jad' }))
             assert.ok(validator.validate())
         })
         it('Validation should succeed if the field under validation is not present while the other field matches any of the specified values', function () {
-            validator.setData({ first: 'jad' }).setRules({ last: 'required_unless:first,test,jad' })
+            validator.setData({ first: 'jad' }).setRules(dynamicRules({ last: 'required_unless:first,test,jad' }))
             assert.ok(validator.validate())
         })
         it('Validation should succeed if the field under validation is not present while the other field matches any of the specified numeric values', function () {
-            validator.setData({ first: 0 }).setRules({ last: 'required_unless:first,0,2' })
+            validator.setData({ first: 0 }).setRules(dynamicRules({ last: 'required_unless:first,0,2' }))
             assert.ok(validator.validate())
 
-            validator.setData({ first: 1 }).setRules({ last: 'required_unless:first,1,2' })
+            validator.setData({ first: 1 }).setRules(dynamicRules({ last: 'required_unless:first,1,2' }))
             assert.ok(validator.validate())
         })
         it('Validation should succeed if the field under validation is not present while the other field matches any of the specified boolean values', function () {
-            validator.setData({ first: true }).setRules({ last: 'required_unless:first,true' })
+            validator.setData({ first: true }).setRules(dynamicRules({ last: 'required_unless:first,true' }))
             assert.ok(validator.validate())
 
-            validator.setData({ first: false }).setRules({ last: 'required_unless:first,false' })
+            validator.setData({ first: false }).setRules(dynamicRules({ last: 'required_unless:first,false' }))
             assert.ok(validator.validate())
         })
         it('Validation should succeed if the field under validation is not present while the other field matches any of the specified null values', function () {
-            validator.setData({ first: null }).setRules({ last: 'required_unless:first,null' })
+            validator.setData({ first: null }).setRules(dynamicRules({ last: 'required_unless:first,null' }))
             assert.ok(validator.validate())
 
-            validator.setData({ first: null }).setRules({ last: 'required_unless:first,Null' })
+            validator.setData({ first: null }).setRules(dynamicRules({ last: 'required_unless:first,Null' }))
             assert.ok(validator.validate())
 
-            validator.setData({ first: null }).setRules({ last: 'required_unless:first,NULL' })
+            validator.setData({ first: null }).setRules(dynamicRules({ last: 'required_unless:first,NULL' }))
             assert.ok(validator.validate())
         })
         it('Validation should fail if both fields are not present and null is one of the specied values', function () {
-            validator.setData({}).setRules({ last: 'required_unless:first,NULL' })
+            validator.setData({}).setRules(dynamicRules({ last: 'required_unless:first,NULL' }))
             assert.ok(validator.validate())
         })
     })
