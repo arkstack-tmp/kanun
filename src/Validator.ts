@@ -190,6 +190,33 @@ export class Validator<
         }
     }
 
+    /**
+     * Prefer request-scoped uploaded files over scalar placeholder body values.
+     * 
+     * @param attribute 
+     * @returns 
+     */
+    private getValidatedAttributeValue (attribute: string): any {
+        const dataValue = deepFind(this.data, attribute)
+        const requestFileValue = deepFind(this.getContext().requestFiles ?? {}, attribute)
+
+        if (typeof requestFileValue === 'undefined') {
+            return dataValue
+        }
+
+        if (
+            typeof dataValue === 'undefined'
+            || dataValue === null
+            || typeof dataValue === 'string'
+            || typeof dataValue === 'number'
+            || typeof dataValue === 'boolean'
+        ) {
+            return requestFileValue
+        }
+
+        return dataValue
+    }
+
 
     /**
      * Get the data that passed validation.
@@ -204,10 +231,7 @@ export class Validator<
                 continue
             }
 
-            const value = deepFind(this.data, key)
-            const resolvedValue = typeof value !== 'undefined'
-                ? value
-                : deepFind(this.getContext().requestFiles ?? {}, key)
+            const resolvedValue = this.getValidatedAttributeValue(key)
 
             if (typeof resolvedValue !== 'undefined') {
                 deepSet(clean, key, resolvedValue)

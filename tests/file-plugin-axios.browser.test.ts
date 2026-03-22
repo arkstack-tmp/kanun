@@ -78,6 +78,7 @@ describe('File upload adapters in browser environments', function () {
 
                 response.json({
                     bodyAvatar: request.body?.avatar ?? null,
+                    filename: validated.avatar?.originalname ?? validated.avatar?.name ?? null,
                     hasAvatar: Object.prototype.hasOwnProperty.call(validated, 'avatar'),
                     requestFilesAvatarIsArray: Array.isArray(requestFiles.avatar),
                     requestFilesKeys: Object.keys(requestFiles),
@@ -101,6 +102,7 @@ describe('File upload adapters in browser environments', function () {
             assert.equal(response.status, 200)
             assert.deepEqual(response.data, {
                 bodyAvatar: null,
+                filename: 'avatar.jpg',
                 hasAvatar: true,
                 requestFilesAvatarIsArray: false,
                 requestFilesKeys: ['avatar'],

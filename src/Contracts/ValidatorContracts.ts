@@ -16,12 +16,29 @@ export type ExtractRules<R> =
     ? ExtractRules<R[number]>
     : never
 
+type ValidatedData<T> = {
+    [K in keyof T]: T[K]
+}
+
+type RuleOutputKey<T extends string> =
+    T extends `${infer Root}.*${string}`
+    ? Root
+    : T extends `${infer Root}.${string}`
+    ? Root
+    : T
+
+type RuleOutputKeys<R extends Record<string, any>> = RuleOutputKey<Extract<keyof R, string>>
+
 export type ValidatedByRules<
     D extends Record<string, any>,
     R extends RulesForData<D>
-> = {
-        [K in Extract<keyof R, keyof D>]: D[K]
+> = ValidatedData<
+    {
+        [K in Extract<RuleOutputKeys<R>, keyof D>]: D[K]
+    } & {
+        [K in Exclude<RuleOutputKeys<R>, keyof D>]: any
     }
+>
 
 /**
  * Flatten data structure into dot-notation keys
@@ -60,4 +77,4 @@ export type MessagesForRules<Rules extends Record<string, any>> = {
  */
 export type RulesForData<D extends Record<string, any>> = Partial<
     Record<DotPaths<D>, ValidationRuleSet>
-> 
+>

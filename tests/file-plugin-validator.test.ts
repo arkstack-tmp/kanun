@@ -233,7 +233,10 @@ describe('File validator plugin', function () {
         })
 
         assert.equal(await validator.passes(), true)
-        assert.deepEqual(await validator.validate(), { avatar: '-' })
+
+        const validated = await validator.validate() as unknown as { avatar: typeof avatar }
+
+        assert.deepEqual(validated, { avatar })
     })
 
     it('still fails the required rule when a request-scoped file is missing', async () => {
