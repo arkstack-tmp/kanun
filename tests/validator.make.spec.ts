@@ -69,7 +69,7 @@ describe('Validator.make', () => {
     })
 
     it('reports all error messages', async () => {
-        const v = Validator.make({ email: '' }, { email: 'required|email' })
+        const v = Validator.make({ email: '' }, { email: 'required|numeric' })
         await expect(v.validate()).rejects.toThrowError(ValidationException)
         expect(Object.keys(v.errors().all()).length).toBeGreaterThan(0)
     })

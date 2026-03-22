@@ -72,11 +72,11 @@ describe('Validator', () => {
 
         it('passes when numeric is in valid range', async () => {
             const v = new Validator(
-                {},
-                { age: 'required|file|min:18|max:60' }
+                { age: 25 },
+                { age: 'required|numeric|min:18|max:60' }
             )
 
-            const result = await v.validate()
+            const result = await v.passes()
             expect(result).toBe(true)
         })
 
