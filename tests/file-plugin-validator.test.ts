@@ -92,6 +92,18 @@ Validator.use(createFileValidatorPlugin({
 }))
 
 describe('File validator plugin', function () {
+    it('detects dynamically generated browser File instances', async () => {
+        const generatedAvatar = new File([png1x1], 'avatar.jpg', { type: 'image/jpeg' })
+
+        const validator = Validator.make(
+            { avatar: generatedAvatar },
+            { avatar: 'file|image|mimetypes:image/jpeg' },
+        )
+
+        assert.equal(await validator.passes(), true)
+        assert.deepEqual(await validator.validate(), { avatar: generatedAvatar })
+    })
+
     it('validates a request-scoped uploaded image', async () => {
         const avatar = {
             buffer: png1x1,
@@ -199,6 +211,29 @@ describe('File validator plugin', function () {
 
         assert.equal(await validator.passes(), true)
         assert.deepEqual(await validator.validate(), { avatar })
+    })
+
+    it('prefers request-scoped files over placeholder body values', async () => {
+        const avatar = {
+            buffer: png1x1,
+            mimetype: 'image/jpeg',
+            originalname: 'avatar.jpg',
+            size: 2048,
+        }
+
+        const validator = Validator.make(
+            { avatar: '-' },
+            {
+                avatar: ['required', 'file', 'image', 'mimetypes:image/jpeg'],
+            },
+        ).withContext({
+            requestFiles: {
+                avatar,
+            },
+        })
+
+        assert.equal(await validator.passes(), true)
+        assert.deepEqual(await validator.validate(), { avatar: '-' })
     })
 
     it('still fails the required rule when a request-scoped file is missing', async () => {

@@ -63,6 +63,14 @@ function isRecord (value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+function isBlobLike (value: unknown): value is Blob {
+    return typeof Blob !== 'undefined' && value instanceof Blob
+}
+
+function isArrayBufferReadable (value: unknown): value is ArrayBufferReadable {
+    return isRecord(value) && typeof value.arrayBuffer === 'function'
+}
+
 /**
  * Check if the given value is a file or an array of files.
  * 
@@ -70,20 +78,27 @@ function isRecord (value: unknown): value is Record<string, unknown> {
  * @returns 
  */
 function isFileLike (value: unknown): value is FileLike {
+    if (isBlobLike(value)) {
+        return true
+    }
+
     if (!isRecord(value)) {
         return false
     }
 
     return [
         'buffer',
+        'fieldname',
         'filename',
         'height',
+        'lastModified',
         'mimetype',
         'name',
         'originalname',
         'path',
         'size',
         'type',
+        'arrayBuffer',
         'width',
     ].some(key => typeof value[key] !== 'undefined')
 }
@@ -102,6 +117,14 @@ function normalizeFiles (value: unknown): FileLike[] {
     return isFileLike(value) ? [value] : []
 }
 
+function isResolvedFileCandidate (value: unknown): boolean {
+    if (Array.isArray(value)) {
+        return value.length > 0 && value.every(isFileLike)
+    }
+
+    return isFileLike(value)
+}
+
 /**
  * Resolve the candidate files for the given attribute and context. T
  * 
@@ -115,9 +138,11 @@ async function resolveCandidateFiles (
     attribute: string,
     context: FileRuleExecutionContext,
 ): Promise<unknown> {
-    if (typeof value !== 'undefined') {
+    if (isResolvedFileCandidate(value)) {
         return value
     }
+
+    let resolvedValue: unknown
 
     if (pluginOptions.resolveFiles) {
         const resolved = await pluginOptions.resolveFiles({
@@ -127,12 +152,24 @@ async function resolveCandidateFiles (
             value,
         })
 
-        if (typeof resolved !== 'undefined') {
+        if (isResolvedFileCandidate(resolved)) {
             return resolved
         }
+
+        resolvedValue = resolved
     }
 
-    return deepFind(context.context.requestFiles ?? {}, attribute)
+    const requestScopedValue = deepFind(context.context.requestFiles ?? {}, attribute)
+
+    if (typeof requestScopedValue !== 'undefined') {
+        return requestScopedValue
+    }
+
+    if (typeof resolvedValue !== 'undefined') {
+        return resolvedValue
+    }
+
+    return value
 }
 
 async function resolveFiles (
@@ -146,15 +183,6 @@ async function resolveFiles (
         candidates,
         files: normalizeFiles(candidates),
     }
-}
-
-function isBlobLike (value: unknown): value is Blob {
-    return typeof Blob !== 'undefined'
-        && value instanceof Blob
-}
-
-function isArrayBufferReadable (value: unknown): value is ArrayBufferReadable {
-    return isRecord(value) && typeof value.arrayBuffer === 'function'
 }
 
 async function getBuffer (file: FileLike): Promise<Buffer | Uint8Array | undefined> {
