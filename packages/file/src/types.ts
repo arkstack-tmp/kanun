@@ -11,7 +11,6 @@ export interface FileLike {
     size?: number
     type?: string
     width?: number
-    [key: string]: unknown
 }
 
 export interface ArrayBufferReadable {

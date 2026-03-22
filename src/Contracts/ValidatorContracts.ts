@@ -1,4 +1,4 @@
-import { ValidationRuleName, ValidationRuleSet } from './ValidationRuleName'
+import { ValidationRuleName, ValidationRuleOutputTypeMap, ValidationRuleSet } from './ValidationRuleName'
 
 /**
  * Parse rule names from rule string or string[] definitions
@@ -29,14 +29,31 @@ type RuleOutputKey<T extends string> =
 
 type RuleOutputKeys<R extends Record<string, any>> = RuleOutputKey<Extract<keyof R, string>>
 
+type RuleOutputOverride<R> =
+    'files' extends ExtractRules<R>
+    ? ('files' extends keyof ValidationRuleOutputTypeMap ? ValidationRuleOutputTypeMap['files'] : never)
+    : ValidationRuleOutputTypeMap[Extract<ExtractRules<R>, keyof ValidationRuleOutputTypeMap>]
+
+type FieldOutputValue<
+    D extends Record<string, any>,
+    K extends string,
+    FieldRules,
+> = K extends keyof D
+    ? [RuleOutputOverride<FieldRules>] extends [never]
+        ? D[K]
+        : D[K] extends RuleOutputOverride<FieldRules>
+            ? D[K]
+            : RuleOutputOverride<FieldRules>
+    : [RuleOutputOverride<FieldRules>] extends [never]
+        ? any
+        : RuleOutputOverride<FieldRules>
+
 export type ValidatedByRules<
     D extends Record<string, any>,
     R extends RulesForData<D>
 > = ValidatedData<
     {
-        [K in Extract<RuleOutputKeys<R>, keyof D>]: D[K]
-    } & {
-        [K in Exclude<RuleOutputKeys<R>, keyof D>]: any
+        [K in RuleOutputKeys<R>]: FieldOutputValue<D, K, K extends keyof R ? R[K] : never>
     }
 >
 

@@ -17,6 +17,16 @@ declare module 'kanun' {
         mimes: 'paramable'
         mimetypes: 'paramable'
     }
+
+    interface ValidationRuleOutputTypeMap {
+        dimensions: FileLike
+        extensions: FileLike
+        file: FileLike
+        files: FileLike[]
+        image: FileLike
+        mimes: FileLike
+        mimetypes: FileLike
+    }
 }
 
 const IMAGE_EXTENSIONS = new Set([

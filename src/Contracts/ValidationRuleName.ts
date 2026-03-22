@@ -9,6 +9,9 @@ export type ValidationRuleAutocompleteKind = 'plain' | 'paramable'
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ValidationRuleAutocompleteMap { }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ValidationRuleOutputTypeMap { }
+
 /**
  * Backward-compatible alias for older plugin augmentations.
  */
