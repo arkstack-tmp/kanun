@@ -92,8 +92,11 @@ export class Validator<
      * @param plugin The plugin to register
      * @returns The Validator class for chaining
      */
-    static use (plugin: ValidatorPlugin): typeof Validator {
-        usePlugin(plugin)
+    static use (plugin: ValidatorPlugin | ValidatorPlugin[]): typeof Validator {
+        if (Array.isArray(plugin))
+            for (const p of plugin) usePlugin(p)
+        else usePlugin(plugin)
+
         return this
     }
 
@@ -104,7 +107,7 @@ export class Validator<
      * @param plugin The plugin to register
      * @returns The Validator instance for chaining
      */
-    use (plugin: ValidatorPlugin): this {
+    use (plugin: ValidatorPlugin | ValidatorPlugin[]): this {
         Validator.use(plugin)
         return this
     }

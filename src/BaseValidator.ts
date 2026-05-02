@@ -101,8 +101,11 @@ export class BaseValidator<D extends GenericObject = GenericObject> {
         this.messages = new ErrorBag()
     };
 
-    static use (plugin: ValidatorPlugin): typeof BaseValidator {
-        usePlugin(plugin)
+    static use (plugin: ValidatorPlugin | ValidatorPlugin[]): typeof BaseValidator {
+        if (Array.isArray(plugin))
+            for (const p of plugin) usePlugin(p)
+        else usePlugin(plugin)
+
         return this
     }
 
@@ -111,8 +114,9 @@ export class BaseValidator<D extends GenericObject = GenericObject> {
         return this
     }
 
-    use (plugin: ValidatorPlugin): this {
+    use (plugin: ValidatorPlugin | ValidatorPlugin[]): this {
         BaseValidator.use(plugin)
+
         return this
     }
 

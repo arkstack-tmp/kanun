@@ -30,7 +30,7 @@ export declare class IValidator<
 
     static useDatabase (driver: IDatabaseDriver): typeof IValidator
 
-    static use (plugin: ValidatorPlugin): typeof IValidator
+    static use (plugin: ValidatorPlugin | ValidatorPlugin[]): typeof IValidator
 
     static useContext (context: Record<string, any>): typeof IValidator
 
@@ -63,7 +63,7 @@ export declare class IValidator<
      */
     stopOnFirstFailure (): this
 
-    use (plugin: ValidatorPlugin): this
+    use (plugin: ValidatorPlugin | ValidatorPlugin[]): this
 
     withContext (context: Record<string, any>): this
 
