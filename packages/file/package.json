@@ -1,6 +1,6 @@
 {
     "name": "@kanun-hq/plugin-file",
-    "version": "0.1.7",
+    "version": "0.1.8",
     "description": "File validation plugin for Kanun.",
     "type": "module",
     "publishConfig": {
