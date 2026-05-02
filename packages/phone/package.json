@@ -1,0 +1,41 @@
+{
+    "name": "@kanun-hq/plugin-phone",
+    "version": "0.1.0",
+    "description": "Phone number validation plugin for Kanun.",
+    "type": "module",
+    "publishConfig": {
+        "access": "public"
+    },
+    "files": [
+        "dist"
+    ],
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": "./dist/index.js",
+        "./package.json": "./package.json"
+    },
+    "homepage": "https://arkstack-hq.github.io/kanun",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/arkstack-hq/kanun.git",
+        "directory": "packages/phone"
+    },
+    "keywords": [
+        "kanun",
+        "validation",
+        "phone",
+        "telephone",
+        "plugin"
+    ],
+    "scripts": {
+        "build": "tsdown",
+        "lint": "eslint src --ext .ts",
+        "prepublishOnly": "pnpm build"
+    },
+    "dependencies": {
+        "libphonenumber-js": "^1.12.42"
+    },
+    "peerDependencies": {
+        "kanun": "workspace:^"
+    }
+}

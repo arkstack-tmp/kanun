@@ -15,6 +15,7 @@
     "rootDir": "./",
     "types": ["node", "vitest"],
     "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
     "paths": {
       "kanun": ["src/index.ts"]
     }

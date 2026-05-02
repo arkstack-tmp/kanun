@@ -1,4 +1,5 @@
 import type In from '../Rules/in'
+import type { BaseRule } from '../Rules/baseRule'
 import type NotIn from '../Rules/notIn'
 import type Regex from '../Rules/regex'
 import type RequiredIf from '../Rules/requiredIf'
@@ -121,7 +122,7 @@ type ValidationRuleString = LiteralUnion<ValidationRuleName | ParamableRuleStrin
 /**
  * Single rule value (supports autocomplete + arbitrary strings + RuleContract instances)
  */
-export type ValidationRuleEntry = ValidationRuleString | RuleContract | MethodRules
+export type ValidationRuleEntry = ValidationRuleString | RuleContract | BaseRule | MethodRules
 
 export type ValidationRuleSet =
     | ValidationRuleEntry

@@ -1,6 +1,6 @@
 'use strict'
 
-import BaseRule from './baseRule'
+import { BaseRule } from './baseRule'
 
 class NotIn extends BaseRule {
 
@@ -12,12 +12,12 @@ class NotIn extends BaseRule {
     /**
      * The accepted values.
      */
-    values: (string|number)[] = []
+    values: (string | number)[] = []
 
     /**
      * Create a new NotIn rule instance.
      */
-    constructor(values: (string|number)[]) {
+    constructor(values: (string | number)[]) {
         super()
         this.values = values
     }
@@ -25,7 +25,7 @@ class NotIn extends BaseRule {
     /**
      * Convert the rule to a validation string.
      */
-    toString() {
+    toString () {
         return `${this.rule}:${this.values.join(',')}`
     }
 }

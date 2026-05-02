@@ -1,9 +1,9 @@
 import { assert, describe, it } from 'vitest'
-import { fileValidatorPlugin, useExpressUploadContext } from '../packages/file/src'
+import { fileValidatorPlugin, useExpressUploadContext } from '../src'
 
 import type { AddressInfo } from 'node:net'
 import type { RequestListener } from 'node:http'
-import { Validator } from '../src'
+import { Validator } from '../../../src'
 import axios from 'axios'
 import { createServer } from 'node:http'
 import express from 'express'

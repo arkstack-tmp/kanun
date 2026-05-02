@@ -12,14 +12,14 @@ import {
     withFastifyUploadContext,
     withH3UploadContext,
     withHonoUploadContext,
-} from '../packages/file/src'
+} from '../src'
 
 import type { AddressInfo } from 'node:net'
 import Fastify from 'fastify'
 import { H3 } from 'h3'
 import { Hono } from 'hono'
 import type { RequestListener } from 'node:http'
-import { Validator } from '../src'
+import { Validator } from '../../../src'
 import { createServer } from 'node:http'
 import express from 'express'
 import multer from 'multer'

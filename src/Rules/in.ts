@@ -1,4 +1,4 @@
-import BaseRule from './baseRule'
+import { BaseRule } from './baseRule'
 
 class In extends BaseRule {
 
@@ -10,12 +10,12 @@ class In extends BaseRule {
     /**
      * The accepted values.
      */
-    values: (string|number)[] = []
+    values: (string | number)[] = []
 
     /**
      * Create a new In rule instance.
      */
-    constructor(values: (string|number)[]) {
+    constructor(values: (string | number)[]) {
         super()
         this.values = values
     }
@@ -23,7 +23,7 @@ class In extends BaseRule {
     /**
      * Convert the rule to a validation string.
      */
-    toString() {
+    toString () {
         return `${this.rule}:${this.values.join(',')}`
     }
 

@@ -1,6 +1,6 @@
 'use strict'
 
-import BaseRule from '../Rules/baseRule'
+import { BaseRule } from '../Rules/baseRule'
 import RuleContract from '../Rules/IRuleContract'
 import { TRule } from '../Contracts/BaseContract'
 import { getValidationSize } from '../Plugin'

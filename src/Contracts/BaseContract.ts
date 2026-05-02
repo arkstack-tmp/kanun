@@ -1,6 +1,6 @@
 'use strict'
 
-import BaseRule from '../Rules/baseRule'
+import { BaseRule } from '../Rules/baseRule'
 import { GenericObject } from './IGeneric'
 import RuleContract from '../Rules/IRuleContract'
 import type { ValidationRuleEntry } from './ValidationRuleName'

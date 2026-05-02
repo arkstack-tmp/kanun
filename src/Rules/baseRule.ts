@@ -1,1 +1,1 @@
-export default class BaseRule {};
+export class BaseRule { };
