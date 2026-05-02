@@ -1,6 +1,6 @@
 {
     "name": "@kanun-hq/plugin-file",
-    "version": "0.1.8",
+    "version": "0.1.9",
     "description": "File validation plugin for Kanun.",
     "type": "module",
     "publishConfig": {
@@ -14,7 +14,7 @@
         ".": "./dist/index.js",
         "./package.json": "./package.json"
     },
-    "homepage": "https://arkstack-hq.github.io/kanun",
+    "homepage": "https://arkstack-hq.github.io/kanun/guide/plugins/file",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/arkstack-hq/kanun.git",

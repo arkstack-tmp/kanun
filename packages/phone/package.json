@@ -1,6 +1,6 @@
 {
     "name": "@kanun-hq/plugin-phone",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Phone number validation plugin for Kanun.",
     "type": "module",
     "publishConfig": {
@@ -14,7 +14,7 @@
         ".": "./dist/index.js",
         "./package.json": "./package.json"
     },
-    "homepage": "https://arkstack-hq.github.io/kanun",
+    "homepage": "https://arkstack-hq.github.io/kanun/guide/plugins/phone",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/arkstack-hq/kanun.git",
