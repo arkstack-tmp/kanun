@@ -132,6 +132,8 @@ describe('Phone validator plugin', function () {
         assert.equal(parsed.formatInternational(), '+32 12 34 56 78')
         assert.equal(parsed.formatRFC3966(), 'tel:+3212345678')
         assert.equal(parsed.formatNational(), '012 34 56 78')
+        assert.equal(parsed.formatNationalSignificant(), '12 34 56 78')
+        assert.equal(parsed.formatNationalSignificant(true), '12345678')
         assert.equal(parsed.formatForCountry('BE'), '012 34 56 78')
         assert.equal(parsed.formatForMobileDialingInCountry('US'), '011 32 12 34 56 78')
         assert.equal(parsed.getType(), 'fixed_line')
@@ -150,6 +152,9 @@ describe('Phone validator plugin', function () {
         assert.equal(phone.formatE164('012 34 56 78', 'BE'), '+3212345678')
         assert.equal(phone.formatInternational('012 34 56 78', 'BE'), '+32 12 34 56 78')
         assert.equal(phone.formatNational('+3212345678'), '012 34 56 78')
+        assert.equal(phone.formatNationalSignificant('+234 903 123 4567'), '903 123 4567')
+        assert.equal(phone.formatNationalSignificant('+234 903 123 4567', undefined, true), '9031234567')
+        assert.equal(phone.formatNationalSignificant('+1 415 555 2671'), '415 555 2671')
     })
 
     it('casts raw and E.164 phone number values', () => {

@@ -83,6 +83,7 @@ export const phone = Object.assign(createPhoneNumber, {
     formatE164: (value: unknown, country?: CountryCode | string) => PhoneNumber.parse(value, { country })?.formatE164() ?? null,
     formatInternational: (value: unknown, country?: CountryCode | string) => PhoneNumber.parse(value, { country })?.formatInternational() ?? null,
     formatNational: (value: unknown, country?: CountryCode | string) => PhoneNumber.parse(value, { country })?.formatNational() ?? null,
+    formatNationalSignificant: (value: unknown, country?: CountryCode | string, stripSpaces: boolean = false) => PhoneNumber.parse(value, { country })?.formatNationalSignificant(stripSpaces) ?? null,
     parse: PhoneNumber.parse,
 })
 

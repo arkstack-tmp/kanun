@@ -132,6 +132,27 @@ export class PhoneNumber {
     }
 
     /**
+     * Formats the national significant number by stripping the country calling
+     * code and leading national prefix.
+     * 
+     * @param stripSpaces 
+     * @returns 
+     */
+    formatNationalSignificant (stripSpaces: boolean = false): string {
+        const prefix = `+${this.number.countryCallingCode} `
+        const international = this.formatInternational()
+        let formatted: string
+
+        if (international.startsWith(prefix)) {
+            formatted = international.slice(prefix.length)
+        } else {
+            formatted = international.replace(`+${this.number.countryCallingCode}`, '').trim()
+        }
+
+        return stripSpaces ? formatted.replace(/\s+/g, '') : formatted
+    }
+
+    /**
      * Formats the phone number based on the specified country.
      * 
      * @param country 

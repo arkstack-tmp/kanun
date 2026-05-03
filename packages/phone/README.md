@@ -256,6 +256,8 @@ phoneNumber.formatE164(); // '+3212345678'
 phoneNumber.formatInternational(); // '+32 12 34 56 78'
 phoneNumber.formatRFC3966(); // 'tel:+3212345678'
 phoneNumber.formatNational(); // '012 34 56 78'
+phoneNumber.formatNationalSignificant(); // '12 34 56 78'
+phoneNumber.formatNationalSignificant(true); // '12345678'
 phoneNumber.formatForCountry('BE'); // '012 34 56 78'
 phoneNumber.formatForMobileDialingInCountry('US'); // '011 32 12 34 56 78'
 phoneNumber.getType(); // 'fixed_line'
@@ -264,6 +266,14 @@ phoneNumber.getCountry(); // 'BE'
 phoneNumber.isOfCountry('BE'); // true
 phoneNumber.equals(new PhoneNumber('012 34 56 78', 'BE')); // true
 phoneNumber.notEquals('+32 470 12 34 56'); // true
+```
+
+`formatNationalSignificant()` is useful when you want to display the subscriber-facing national number without the country calling code or leading national prefix:
+
+```ts
+new PhoneNumber('+234 903 123 4567').formatNationalSignificant(); // '903 123 4567'
+new PhoneNumber('+234 903 123 4567').formatNationalSignificant(true); // '9031234567'
+new PhoneNumber('+32 12 34 56 78').formatNationalSignificant(); // '12 34 56 78'
 ```
 
 National numbers can be parsed with a country:
@@ -295,6 +305,8 @@ phone.format('+3212/34.56.78'); // '+3212345678'
 phone.formatE164('012 34 56 78', 'BE'); // '+3212345678'
 phone.formatInternational('012 34 56 78', 'BE'); // '+32 12 34 56 78'
 phone.formatNational('+3212345678'); // '012 34 56 78'
+phone.formatNationalSignificant('+234 903 123 4567'); // '903 123 4567'
+phone.formatNationalSignificant('+234 903 123 4567', undefined, true); // '9031234567'
 ```
 
 ## Arkormx Casts
