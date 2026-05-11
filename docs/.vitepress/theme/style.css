@@ -361,13 +361,6 @@ body {
   transition: background-color 0.25s;
 }
 
-.dark .VPFeatures.VPHomeFeatures .box > .VPImage,
-.dark .why-icon img,
-.dark .card-icon img,
-.dark .feature-icon img {
-  filter: invert();
-}
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
