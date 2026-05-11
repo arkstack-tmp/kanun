@@ -166,4 +166,16 @@ describe('Phone validator plugin', function () {
         assert.equal(e164Cast.set('012 34 56 78'), '+3212345678')
         assert.equal(e164Cast.set('not a phone number'), null)
     })
+
+    it('casts raw and E.164 phone number values statically', () => {
+        RawPhoneNumberCast.setDefaultCountry('BE')
+
+        const RawCast = RawPhoneNumberCast
+        const E164Cast = E164PhoneNumberCast
+
+        assert.instanceOf(RawCast.get('012 34 56 55'), PhoneNumber)
+        assert.equal(RawCast.set('012 34 56 55'), '+3212345655')
+        assert.equal(E164Cast.set('012 34 56 55'), '+3212345655')
+        assert.equal(E164Cast.set('this is not a phone number'), null)
+    })
 })

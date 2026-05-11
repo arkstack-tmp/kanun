@@ -314,3 +314,22 @@ export class User extends Model {
   } as const;
 }
 ```
+
+### Static Usage
+
+Bot `RawPhoneNumberCast` and `E164PhoneNumberCast` model casts support static usage without initialization, but this will require you to call the `setDefaultCountry` method before the model is intialized, or only allow fully internationalized phone numbers.
+
+```ts
+import { Model } from 'arkormx';
+import { RawPhoneNumberCast } from '@kanun-hq/plugin-phone';
+
+RawPhoneNumberCast.setDefaultCountry('BE');
+// OR
+// RawPhoneNumberCast.setDefaultCountry('country_field');
+
+export class User extends Model {
+  protected override casts = {
+    phone: RawPhoneNumberCast,
+  } as const;
+}
+```
