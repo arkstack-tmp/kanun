@@ -3,7 +3,7 @@ import { fileValidatorPlugin, useExpressUploadContext } from '../src'
 
 import type { AddressInfo } from 'node:net'
 import type { RequestListener } from 'node:http'
-import { Validator } from '../../../src'
+import { Validator } from 'kanun'
 import axios from 'axios'
 import { createServer } from 'node:http'
 import express from 'express'

@@ -14,10 +14,10 @@
     "outDir": "./dist",
     "rootDir": "./",
     "types": ["node", "vitest"],
-    "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
     "paths": {
-      "kanun": ["src/index.ts"]
+      "kanun": ["./src/index.ts"],
+      "src": ["./src/index.ts"],
+      "src/*": ["./src/*"]
     }
   },
   "exclude": [

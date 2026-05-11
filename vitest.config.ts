@@ -1,10 +1,19 @@
-import { defineConfig } from 'vitest/config'
-import tsconfigPaths from 'vite-tsconfig-paths'
+import { ViteUserConfig, defineConfig } from 'vitest/config'
+
+import { fileURLToPath } from 'node:url'
 
 const sharedExclude = ['**/node_modules/**', '**/dist/**', '**/cypress/**', '**/.{idea,git,cache,output,temp}/**', '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*']
 
+const resolvePath = (path: string) => fileURLToPath(new URL(path, import.meta.url))
+
 export default defineConfig({
-    plugins: [tsconfigPaths()],
+    resolve: {
+        tsconfigPaths: true,
+        alias: {
+            'src': resolvePath('./src'),
+            'kanun': resolvePath('./src/index.ts'),
+        },
+    } as ViteUserConfig['resolve'],
     test: {
         root: './',
         passWithNoTests: true,
