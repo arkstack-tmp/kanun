@@ -1,6 +1,6 @@
 {
   "name": "kanun",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Framework-agnostic TypeScript-first validation library.",
   "type": "module",
   "files": [
