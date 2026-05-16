@@ -15,7 +15,7 @@ export default defineConfig({
     ['meta', { property: 'og:title', content: 'Kanun' }],
     ['meta', { property: 'og:description', content: 'Framework-agnostic TypeScript-first validation library' }],
     ['meta', { property: 'og:image', content: '/banner.jpg' }],
-    ['meta', { property: 'og:url', content: 'https://arkstack-hq.github.io/kanun/' }],
+    ['meta', { property: 'og:url', content: 'https://arkstack-tmp.github.io/kanun/' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['meta', { name: 'twitter:title', content: 'Kanun' }],
     ['meta', { name: 'twitter:description', content: 'Framework-agnostic TypeScript-first validation library' }],
@@ -68,7 +68,7 @@ export default defineConfig({
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/arkstack-hq/kanun' }
+      { icon: 'github', link: 'https://github.com/arkstack-tmp/kanun' }
     ]
   }
 })
