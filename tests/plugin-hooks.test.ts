@@ -8,7 +8,7 @@ describe('Validator plugin hooks', () => {
             name: 'success-hook-test',
             install: ({ onValidationSuccess }) => {
                 onValidationSuccess((validator) => {
-                    if (validator.getData().__plugin_hook_case === 'success')
+                    if ((validator.getData() as any).__plugin_hook_case === 'success')
                         calls.push(validator.validatedData().name)
                 })
             },
