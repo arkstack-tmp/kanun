@@ -10,7 +10,7 @@ import type { IDatabaseDriver } from './Contracts/IDatabaseDriver'
 import { IValidator } from './Contracts/IValidator'
 import Lang from './Lang'
 import { MessageBag } from './utilities/MessageBag'
-import { usePlugin, type ValidatorPlugin } from './Plugin'
+import { dispatchValidationErrorHooks, dispatchValidationSuccessHooks, usePlugin, type ValidatorPlugin } from './Plugin'
 import { ValidationException } from './ValidationException'
 import { ValidationRule } from './ValidationRule'
 import { ValidationRuleSet } from './Contracts/ValidationRuleName'
@@ -124,6 +124,11 @@ export class Validator<
         for (const after of this.#after) {
             after()
         }
+
+        if (exec.passing)
+            await dispatchValidationSuccessHooks(this)
+        else
+            await dispatchValidationErrorHooks(this)
 
         return exec.passing
     }

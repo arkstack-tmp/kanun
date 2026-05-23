@@ -2,6 +2,7 @@ import { register, registerImplicit } from './Rules/registerRule'
 
 import { GenericObject } from './Contracts/IGeneric'
 import Lang from './Lang'
+import type { Validator } from './Validator'
 
 export interface ValidationValueInspector {
     type: string
@@ -9,11 +10,15 @@ export interface ValidationValueInspector {
     size?: (value: any) => number
 }
 
+export type ValidationLifecycleHook = (validator: Validator<any, any>) => void | Promise<void>
+
 export interface ValidatorPluginApi {
     registerRule: typeof register
     registerImplicitRule: typeof registerImplicit
     registerValueInspector: (inspector: ValidationValueInspector) => void
     extendTranslations: (translations: GenericObject) => void
+    onValidationError: (hook: ValidationLifecycleHook) => void
+    onValidationSuccess: (hook: ValidationLifecycleHook) => void
 }
 
 export interface ValidatorPlugin {
@@ -22,6 +27,8 @@ export interface ValidatorPlugin {
 }
 
 const valueInspectors: ValidationValueInspector[] = []
+const validationErrorHooks: ValidationLifecycleHook[] = []
+const validationSuccessHooks: ValidationLifecycleHook[] = []
 
 const api: ValidatorPluginApi = {
     registerRule: register,
@@ -30,6 +37,8 @@ const api: ValidatorPluginApi = {
     extendTranslations: (translations: GenericObject) => {
         Lang.extendTranslationObject(translations)
     },
+    onValidationError: registerValidationErrorHook,
+    onValidationSuccess: registerValidationSuccessHook,
 }
 
 export function definePlugin (plugin: ValidatorPlugin): ValidatorPlugin {
@@ -49,6 +58,24 @@ export function registerValueInspector (inspector: ValidationValueInspector): vo
     }
 
     valueInspectors.push(inspector)
+}
+
+export function registerValidationErrorHook (hook: ValidationLifecycleHook): void {
+    validationErrorHooks.push(hook)
+}
+
+export function registerValidationSuccessHook (hook: ValidationLifecycleHook): void {
+    validationSuccessHooks.push(hook)
+}
+
+export async function dispatchValidationErrorHooks (validator: Validator<any, any>): Promise<void> {
+    for (const hook of validationErrorHooks)
+        await hook(validator)
+}
+
+export async function dispatchValidationSuccessHooks (validator: Validator<any, any>): Promise<void> {
+    for (const hook of validationSuccessHooks)
+        await hook(validator)
 }
 
 export function getValidationValueInspector (value: any): ValidationValueInspector | undefined {

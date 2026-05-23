@@ -71,7 +71,7 @@ import { definePlugin } from 'kanun';
 
 export const examplePlugin = definePlugin({
   name: 'example-plugin',
-  install: ({ registerRule, extendTranslations }) => {
+  install: ({ registerRule, extendTranslations, onValidationError, onValidationSuccess }) => {
     registerRule('starts_with_kanun', (value) => {
       return typeof value === 'string' && value.startsWith('kanun');
     });
@@ -81,9 +81,43 @@ export const examplePlugin = definePlugin({
         starts_with_kanun: 'The :attribute must start with kanun.',
       },
     });
+
+    onValidationSuccess((validator) => {
+      // Runs after a validator completes successfully.
+    });
+
+    onValidationError((validator) => {
+      // Runs after a validator fails and the error bag has been populated.
+      validator.errors().all();
+    });
   },
 });
 ```
+
+### Validation Lifecycle Hooks
+
+Plugins can register lifecycle hooks that run after each validator execution.
+
+```ts
+export const auditPlugin = definePlugin({
+  name: 'audit-plugin',
+  install: ({ onValidationSuccess, onValidationError }) => {
+    onValidationSuccess((validator) => {
+      const data = validator.validatedData();
+      // send successful validation metadata to your integration
+    });
+
+    onValidationError((validator) => {
+      const errors = validator.errors().all();
+      // send failed validation metadata to your integration
+    });
+  },
+});
+```
+
+`onValidationError(...)` runs after validation fails and the validator's
+`MessageBag` has been populated. `onValidationSuccess(...)` runs after
+validation passes, so plugins can safely read `validatedData()`.
 
 ### Add Rule Autocomplete For Plugin Users
 
